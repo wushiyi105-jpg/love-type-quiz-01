@@ -397,8 +397,11 @@
       border-radius: 0;
       box-shadow: 0 16px 50px rgba(17, 17, 17, 0.10);
       background: var(--track);
-      user-select: none;
+      user-select: auto;
+      -webkit-user-select: auto;
       -webkit-touch-callout: default;
+      touch-action: auto;
+      pointer-events: auto;
       border: 1px solid var(--line);
     }
 
@@ -438,6 +441,70 @@
       line-height: 1.7;
     }
 
+
+    .save-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px calc(24px + var(--safe-bottom, 0px));
+      box-sizing: border-box;
+    }
+    .save-lightbox.is-on { display: flex; }
+    .save-lightbox-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 8, 10, 0.86);
+    }
+    .save-lightbox-panel {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: min(100%, 420px);
+      pointer-events: none;
+    }
+    .save-lightbox-hint {
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.96);
+      color: #1a1a1a;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      padding: 8px 16px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+    #save-lightbox-img {
+      pointer-events: auto;
+      max-width: 86vw;
+      max-height: 78vh;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+      user-select: auto;
+      -webkit-user-select: auto;
+      -webkit-touch-callout: default;
+      touch-action: auto;
+    }
+    .save-lightbox-close {
+      pointer-events: auto;
+      min-width: 128px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -464,6 +531,16 @@
 <body>
   <div id="app"></div>
   <div id="toast" class="toast" role="status"></div>
+
+  <div id="save-lightbox" class="save-lightbox" aria-hidden="true">
+    <div class="save-lightbox-backdrop" data-lightbox-close></div>
+    <div class="save-lightbox-panel">
+      <div class="save-lightbox-hint">👆 长按下方图片 → 保存到相册</div>
+      <img id="save-lightbox-img" alt="结果卡" />
+      <button type="button" class="save-lightbox-close" data-lightbox-close>关闭</button>
+    </div>
+  </div>
+
 
   <script>
   /* =============================================================================
@@ -702,7 +779,8 @@
     answers: [],
     result: null,
     bars: [],
-    cardUrl: ""
+    cardUrl: "",
+    cardCanvas: null
   };
 
   const app = document.getElementById("app");
@@ -823,6 +901,7 @@
     state.result = null;
     state.bars = [];
     state.cardUrl = "";
+    state.cardCanvas = null;
     render();
   }
 
@@ -1027,26 +1106,71 @@
   async function saveOrShareCard() {
     const img = document.getElementById("result-card-img");
     if (!img || !img.src) return;
-    const filename = `${QUIZ_CONFIG.card.filePrefix}-${state.result.name}.png`;
+    const filename = `${QUIZ_CONFIG.card.filePrefix}-${state.result.name}.jpg`;
+    const isInApp = /MicroMessenger|xhs|XiaoHongShu|Aweme|Douyin|QQ\/|Weibo/i.test(navigator.userAgent);
+    const isIOS = /iP(hone|ad|od)/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    if (isInApp || isIOS) {
+      openSaveLightbox(img.src);
+      return;
+    }
+
     try {
-      const blob = await (await fetch(img.src)).blob();
-      const file = new File([blob], filename, { type: "image/png" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: state.result.name, text: state.result.quote });
-        return;
+      const canvas = state.cardCanvas;
+      let blob;
+      if (canvas && typeof canvas.toBlob === "function") {
+        blob = await new Promise((resolve, reject) => {
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/jpeg", state.cardJpegQuality || 0.90);
+        });
+      } else {
+        blob = await (await fetch(img.src)).blob();
       }
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = img.src;
+      a.href = blobUrl;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      showToast("已开始下载到手机相册/下载目录");
     } catch (err) {
-      if (err && err.name === "AbortError") return;
-      showToast("长按上方结果卡，即可保存到相册");
+      openSaveLightbox(img.src);
     }
   }
 
+  function openSaveLightbox(src) {
+    const box = document.getElementById("save-lightbox");
+    const shot = document.getElementById("save-lightbox-img");
+    if (!box || !shot) return;
+    shot.src = src;
+    box.classList.add("is-on");
+    box.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSaveLightbox() {
+    const box = document.getElementById("save-lightbox");
+    const shot = document.getElementById("save-lightbox-img");
+    if (!box) return;
+    box.classList.remove("is-on");
+    box.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if (shot) shot.removeAttribute("src");
+  }
+
+  function bindSaveLightbox() {
+    const box = document.getElementById("save-lightbox");
+    if (!box || box.dataset.bound === "1") return;
+    box.dataset.bound = "1";
+    box.addEventListener("click", (e) => {
+      if (e.target && e.target.hasAttribute("data-lightbox-close")) closeSaveLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && box.classList.contains("is-on")) closeSaveLightbox();
+    });
+  }
+  bindSaveLightbox();
   async function ensureFonts() {
     if (!document.fonts) return;
     try { await document.fonts.ready; } catch (e) {}
@@ -1202,6 +1326,32 @@
       ctx.lineTo(a[6], a[7]);
       ctx.stroke();
     });
+  }
+
+
+  function approxDataUrlBytes(url) {
+    const i = String(url).indexOf(",");
+    const b64 = i >= 0 ? String(url).slice(i + 1) : String(url);
+    let pad = 0;
+    if (b64.endsWith("==")) pad = 2;
+    else if (b64.endsWith("=")) pad = 1;
+    return Math.floor(b64.length * 3 / 4) - pad;
+  }
+
+  function exportCardImage(canvas) {
+    const qualities = [0.90, 0.86, 0.82, 0.78, 0.74];
+    const maxBytes = 160 * 1024;
+    let chosenQ = qualities[qualities.length - 1];
+    let url = canvas.toDataURL("image/jpeg", chosenQ);
+    for (const q of qualities) {
+      const candidate = canvas.toDataURL("image/jpeg", q);
+      chosenQ = q;
+      url = candidate;
+      if (approxDataUrlBytes(candidate) <= maxBytes) break;
+    }
+    state.cardCanvas = canvas;
+    state.cardJpegQuality = chosenQ;
+    return url;
   }
 
   function drawResultCard(result, bars) {
@@ -1461,7 +1611,7 @@
     ctx.font = `400 20px ${FONT_SANS}`;
     ctx.fillText(result.disclaimer || QUIZ_CONFIG.card.disclaimer, W / 2, fy + 90);
 
-    return canvas.toDataURL("image/png");
+    return exportCardImage(canvas);
   }
 
   render();

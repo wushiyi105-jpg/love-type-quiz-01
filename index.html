@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#FAF7F2" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="你身上最招哪种人？年上、年下，还是同龄。8 道情景题，生成可保存的结果卡。" />
+  <title>你身上最招哪种人？</title>
+  <style>
+    :root {
+      --cream: #FAF7F2;
+      --ink: #1E1B18;
+      --ink-soft: #5C574F;
+      --ink-faint: #8A847A;
+      --rose: #C85A53;
+      --rose-deep: #B04842;
+      --rose-soft: rgba(200, 90, 83, 0.12);
+      --sand: #EFE8DD;
+      --sand-dark: #E4DACB;
+      --card: #FFFCF7;
+      --line: rgba(30, 27, 24, 0.12);
+      --shadow: 0 10px 40px rgba(30, 27, 24, 0.06);
+      --font-serif: "Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      --font-sans: "Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+    button {
+      font-family: inherit;
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    img { display: block; max-width: 100%; }
+
+    #app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      position: relative;
+      background:
+        radial-gradient(1200px 420px at 50% -80px, rgba(200, 90, 83, 0.07), transparent 60%),
+        var(--cream);
+    }
+
+    .view {
+      display: none;
+      min-height: 100dvh;
+      padding: calc(28px + var(--safe-top)) 22px calc(32px + var(--safe-bottom));
+      animation: rise 0.48s ease both;
+    }
+    .view.is-on { display: flex; flex-direction: column; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Home ===== */
+    .home-top { padding-top: 18px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--ink-faint);
+      text-transform: none;
+    }
+    .eyebrow::before,
+    .eyebrow::after {
+      content: "";
+      flex: 0 0 18px;
+      height: 1px;
+      background: var(--line);
+    }
+    .eyebrow::before { flex: 0 0 22px; }
+    .home-eyebrow-wrap { display: flex; justify-content: center; margin-bottom: 36px; }
+
+    .home-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(34px, 10vw, 42px);
+      line-height: 1.22;
+      letter-spacing: 0.04em;
+      text-align: center;
+      font-feature-settings: "kern";
+    }
+    .home-title em {
+      font-style: normal;
+      color: var(--rose);
+    }
+
+    .chips {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 22px 0 28px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      background: var(--sand);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+
+    .home-lead {
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--ink-soft);
+      max-width: 20.5em;
+      margin: 0 auto 40px;
+    }
+
+    .cta-primary {
+      display: block;
+      width: 100%;
+      background: var(--ink);
+      color: var(--cream);
+      border-radius: 999px;
+      height: 52px;
+      font-size: 16px;
+      letter-spacing: 0.16em;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .cta-primary:active { transform: scale(0.98); background: #2a2623; }
+
+    .home-meta {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--ink-faint);
+      line-height: 1.7;
+      letter-spacing: 0.04em;
+    }
+
+    .home-footer {
+      margin-top: auto;
+      padding-top: 48px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+    }
+
+    .ornament {
+      width: 10px;
+      height: 10px;
+      margin: 0 auto 28px;
+      border: 1px solid var(--rose);
+      transform: rotate(45deg);
+      opacity: 0.7;
+    }
+
+    /* ===== Quiz ===== */
+    .quiz-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--ink-soft);
+      flex: 0 0 36px;
+      transition: background 0.15s ease;
+    }
+    .back-btn:disabled { opacity: 0.3; }
+    .back-btn:not(:disabled):active { background: var(--sand); }
+    .progress-wrap { flex: 1; }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+    .progress-track {
+      height: 3px;
+      background: var(--sand-dark);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--rose);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    .q-kicker {
+      margin-top: 18px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--rose);
+    }
+    .q-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 23px;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      margin: 10px 0 28px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 14px 14px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+    }
+    .option:active { transform: scale(0.985); }
+    .option.is-picked {
+      border-color: var(--rose);
+      background: #fff8f4;
+    }
+    .opt-key {
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      letter-spacing: 0;
+      color: var(--ink-soft);
+      background: var(--sand);
+      margin-top: 1px;
+    }
+    .option.is-picked .opt-key {
+      background: var(--rose);
+      color: #fff;
+    }
+    .opt-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink);
+      padding-top: 1px;
+    }
+
+    /* ===== Generating / Result ===== */
+    .gen-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .gen-mark {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--rose);
+      transform: rotate(45deg);
+      animation: pulse 1.1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: rotate(45deg) scale(0.9); }
+      50% { opacity: 1; transform: rotate(45deg) scale(1.05); }
+    }
+    .gen-text {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      letter-spacing: 0.12em;
+    }
+    .gen-sub { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.08em; }
+
+    .result-head {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .result-head .eyebrow { justify-content: center; margin-bottom: 8px; }
+    .result-hint {
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+    }
+
+    #result-card-img {
+      width: min(100%, calc((100dvh - 220px) * 1080 / 1920));
+      height: auto;
+      margin: 0 auto;
+      border-radius: 14px;
+      box-shadow: 0 16px 50px rgba(30, 27, 24, 0.12);
+      background: var(--sand);
+      user-select: none;
+      -webkit-touch-callout: default;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .cta-save {
+      height: 48px;
+      border-radius: 999px;
+      background: var(--rose);
+      color: #fff;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+    .cta-save:active { transform: scale(0.98); background: var(--rose-deep); }
+    .cta-ghost {
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: transparent;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+    }
+    .cta-ghost:active { background: var(--sand); }
+
+    .result-note {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink);
+      color: var(--cream);
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 20;
+      white-space: nowrap;
+    }
+    .toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .view, .gen-mark, .progress-fill, .cta-primary, .option { animation: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+  /* =============================================================================
+   * QUIZ_CONFIG — 换题库只需改这一份配置，10 分钟可出新品（选题 2 / 3 / 5 / 7）
+   * -----------------------------------------------------------------------------
+   * 使用步骤：
+   *   1. 改 meta：id / title / subtitle / lead / startLabel / homeFoot
+   *   2. 改 questions：8 题为宜，每题 3–4 个 options，禁止开放式填空
+   *      每个 option.scores 的 key 必须与 results[].id 一致，分值为 0–4 的整数
+   *   3. 改 results：建议 4 档（不要 8 档）。每档需要：
+   *        id, name, hook, tags[3], quote, summary
+   *   4. 改 breakdown：结果卡上的 3 根百分比条
+   *        items[].from  = 直接累加的结果 id
+   *        items[].share = 按 50% 均摊进来的结果 id（本选题的「全龄通杀」）
+   *   5. 改 card：结果卡眉题、印章字、页脚、文件名前缀
+   *   6. （可选）改 hidden：稀有隐藏档。命中 hidden.matches 中不少于
+   *        hidden.minHits 条时，优先出隐藏款，不再走普通 4 档计分。
+   *        隐藏结果可自带 theme / badge / eyebrow / stamp / footer。
+   *   7. 另存为新的 index.html，上传即可发布
+   *
+   * 计分规则：
+   *   先判定隐藏款触发；未触发时，累加 8 题选项的 scores，总分最高的结果档胜出；
+   *   平分时取配置里更靠前的那一档。隐藏档不要写入 option.scores，以免污染普通档。
+   *   吸引力百分比 = from 得分 + share 得分 × 0.5，再归一化为 100%。
+   *
+   * 本选题隐藏款触发（写死在 hidden.matches，供自己测 / 截图，不要发到评论区）：
+   *   8 题中标定 4 个「高张力 / 高神秘」选项，至少命中 3 个即出「危险上头体质」。
+   *   路径占比：C(4,3)×3×4^4 + 4^4 = 3328 / 65536 ≈ 5.08%。
+   *     第 1 题 A  「她看起来很好接近，其实谁也拿不准她在想什么。」
+   *     第 3 题 D  「先把对话框静音。心情几乎不受影响。」
+   *     第 6 题 D  「先看这是真心还是套路，再决定给不给台阶。」
+   *     第 7 题 D  「距离感刚刚好。熟了才知道，我其实很会爱人。」
+   *   自测推荐完整路径（8 题选项）：A / B / D / B / B / D / D / D
+   *   （第 2、4、5、8 题可任选；只要上面 4 条里至少中 3 条，就会出黑金隐藏卡。）
+   * ============================================================================= */
+  const QUIZ_CONFIG = {
+    id: "zhao-na-zhong-ren-01",
+    title: "你身上最招哪种人？",
+    subtitle: "年上 / 年下 / 同龄",
+    kicker: "情感吸引力测试  ·  01",
+    lead: "不是在测你喜欢谁。\n是在测，什么样的人会先为你停下来。",
+    startLabel: "开始测试",
+    homeMeta: "8 道情景题  ·  约 2 分钟\n结束后生成可保存的结果卡",
+    homeFoot: "娱乐测试  ·  结果可长按保存分享",
+    quizKicker: "情景选择题",
+
+    card: {
+      eyebrow: "测试结果",
+      badge: "你身上最招哪种人",
+      stamp: "招",
+      breakdownTitle: "吸引力分布",
+      footer: "长按保存结果卡 · 评论区报出你的类型",
+      disclaimer: "娱乐测试 · 结果仅供自娱和分享",
+      filePrefix: "最招哪种人"
+    },
+
+    breakdown: {
+      items: [
+        { key: "nianshang", label: "年上吸引力", from: ["nianshang"], share: ["allage"] },
+        { key: "nianxia",   label: "年下吸引力", from: ["nianxia"],   share: ["allage"] },
+        { key: "tongling",  label: "同龄吸引力", from: ["tongling"],  share: ["allage"] }
+      ]
+    },
+
+    results: [
+      {
+        id: "nianxia",
+        name: "年下收割机",
+        hook: "松弛感里带着掌控力。专吸慕强、又缺一点安全感的年下。",
+        tags: ["松弛感", "掌控力", "让人安心"],
+        quote: "不必那么用力证明自己。站过来一点，就好。",
+        summary: "你不太主动讨好，却总能把场面接住。对方会想靠近你、被你带着走。"
+      },
+      {
+        id: "nianshang",
+        name: "年上白月光",
+        hook: "清醒独立，还留着少年感。专吸成熟克制、习惯兜底的年上。",
+        tags: ["清醒独立", "少年感", "不被驯服"],
+        quote: "我把自己过得很好。你若来，是并肩，不是收留。",
+        summary: "你独立、清醒，又没有被世故磨平。有人会在你身上看见自己已经遗失的光。"
+      },
+      {
+        id: "tongling",
+        name: "同龄宿命型",
+        hook: "旗鼓相当，精神同频。最招愿意并肩往前走的同龄人。",
+        tags: ["旗鼓相当", "精神同频", "并肩前行"],
+        quote: "不是谁拯救谁。只是刚好，走在同一条路上。",
+        summary: "你不靠反差，也不靠仰视。遇见同频的人，会觉得：原来是你。"
+      },
+      {
+        id: "allage",
+        name: "全龄通杀挂",
+        hook: "先是高冷的边界，熟了才见反差。年上年下都容易上头。",
+        tags: ["高冷边界", "熟后反差", "后劲很足"],
+        quote: "不是谁都能靠近。靠近了才知道，我没有表面上那么远。",
+        summary: "第一眼带着距离感，熟了之后又会突然很温柔。这种后劲，让人很难走掉。"
+      }
+    ],
+
+    /* -----------------------------------------------------------------
+     * hidden — 稀有隐藏档「危险上头体质」
+     * 触发逻辑（确定性，与普通 4 档计分互不干扰）：
+     *   下列 4 个选项代表同一类「难猜、不解释、先距离后温度」的选择。
+     *   answers[q] === option 计 1 次命中；命中数 >= minHits（3）则出隐藏款。
+     *   q / option 均从 0 起算：q=0 是第 1 题，option=0 是 A，option=3 是 D。
+     *
+     * 精确组合：
+     *   第 1 题 A（q:0, option:0）
+     *   第 3 题 D（q:2, option:3）
+     *   第 6 题 D（q:5, option:3）
+     *   第 7 题 D（q:6, option:3）
+     *   4 条里至少中 3 条。约 5.08% 路径（3328 / 65536）。
+     *
+     * 自测推荐完整 8 题路径（0-index）：[0, 1, 3, 1, 1, 3, 3, 3]
+     *   即 A / B / D / B / B / D / D / D
+     * ----------------------------------------------------------------- */
+    hidden: {
+      minHits: 3,
+      matches: [
+        { q: 0, option: 0 },
+        { q: 2, option: 3 },
+        { q: 5, option: 3 },
+        { q: 6, option: 3 }
+      ],
+      result: {
+        id: "hidden-danger",
+        name: "危险上头体质",
+        hook: "难猜、有边界，余温却让人上瘾。靠近你的人，会不自觉越陷越深。",
+        tags: ["难被看穿", "高张力", "后劲危险"],
+        quote: "不是我对谁冷淡。是这种看不透，会让人自己先上头。",
+        summary: "你不讨好，也不解释。先是看不透的距离，熟了才露出温度。这种反差，最容易让人上头。",
+        eyebrow: "隐藏款 · 少数派磁场",
+        badge: "★ 稀有隐藏款",
+        stamp: "隐",
+        footer: "长按保存结果卡 · 评论区晒出你的隐藏款",
+        theme: {
+          id: "black-gold",
+          bg: "#171513",
+          gold: "#D8B26E",
+          ivory: "#F5EFE6"
+        }
+      }
+    },
+
+    questions: [
+      {
+        text: "朋友第一次跟别人形容你，最可能说出哪句？",
+        options: [
+          { text: "「她看起来很好接近，其实谁也拿不准她在想什么。」", scores: { allage: 3, nianxia: 1 } },
+          { text: "「她很稳。跟她待着，会莫名安心。」", scores: { nianxia: 3, allage: 1 } },
+          { text: "「她有点轴，但自己过得特别清楚。」", scores: { nianshang: 3, tongling: 1 } },
+          { text: "「跟她聊天会忘了时间，像已经认识很久。」", scores: { tongling: 3, nianshang: 1 } }
+        ]
+      },
+      {
+        text: "约会对方晚到了 20 分钟，只丢来一句「路上堵」。你会？",
+        options: [
+          { text: "已经先点了单。他到了，把菜单递过去，语气平淡：「先吃吧。」", scores: { nianxia: 3, allage: 1 } },
+          { text: "自己先吃起来。他来了只轻轻看一眼，不发作，也不解释。", scores: { allage: 3, nianxia: 1 } },
+          { text: "心里有点不舒服，但会先问：「是不是工作很累？」", scores: { nianshang: 3, tongling: 1 } },
+          { text: "直接说：「下次提前讲一声就好。」语气正常，不阴阳。", scores: { tongling: 3, nianshang: 1 } }
+        ]
+      },
+      {
+        text: "聊天框突然静了两天，你通常会怎么处理？",
+        options: [
+          { text: "该忙忙。他找过来再接，不会先问「你是不是生气了」。", scores: { nianxia: 3, allage: 1 } },
+          { text: "会丢一条不痛不痒的生活碎片过去，但不追问。", scores: { nianshang: 3, allage: 1 } },
+          { text: "会直接问：「这两天怎么了，忙，还是心情不好？」", scores: { tongling: 3, nianshang: 1 } },
+          { text: "先把对话框静音。心情几乎不受影响。", scores: { allage: 3, nianxia: 1 } }
+        ]
+      },
+      {
+        text: "对方忽然说「我想见你」，你更常怎么回？",
+        options: [
+          { text: "「那你过来。我在家。」", scores: { nianxia: 4 } },
+          { text: "「也可以。我想想这周哪天方便。」", scores: { allage: 3, nianxia: 1 } },
+          { text: "「好啊。我想去那家新开的店。」主动把方案给出来。", scores: { tongling: 3, nianshang: 1 } },
+          { text: "「你先忙完正事。别为了见我，硬挤时间。」", scores: { nianshang: 4 } }
+        ]
+      },
+      {
+        text: "两个人意见顶上了，你更像哪种？",
+        options: [
+          { text: "先听完，再把逻辑慢慢摊开。最后，几乎都按你的走。", scores: { nianxia: 3, allage: 1 } },
+          { text: "不争。把边界划清：「这件事，我有自己的决定。」", scores: { allage: 3, nianshang: 1 } },
+          { text: "会认真吵。吵完还能一起吃饭，不记仇。", scores: { tongling: 4 } },
+          { text: "先自己消化一会儿，再心平气和把话讲清楚。", scores: { nianshang: 3, tongling: 1 } }
+        ]
+      },
+      {
+        text: "对方突然示弱，或忽然跟你撒娇，你的第一反应是？",
+        options: [
+          { text: "有点受用。会轻轻接住，但不会跟着一起软下来。", scores: { nianxia: 3, allage: 1 } },
+          { text: "会愣一下，然后笑着说：「怎么突然这样。」", scores: { nianshang: 3, tongling: 1 } },
+          { text: "很自然地回一句同款幼稚的话。", scores: { tongling: 3, nianshang: 1 } },
+          { text: "先看这是真心还是套路，再决定给不给台阶。", scores: { allage: 4 } }
+        ]
+      },
+      {
+        text: "若只能选一种，你更想要哪种关系？",
+        options: [
+          { text: "他可以依赖我，但别把生活全部堆过来。", scores: { nianxia: 4 } },
+          { text: "两个人都有自己的世界。遇见了，刚好靠近。", scores: { nianshang: 3, allage: 1 } },
+          { text: "最好是战友。一起往前走，谁也不用仰视谁。", scores: { tongling: 4 } },
+          { text: "距离感刚刚好。熟了才知道，我其实很会爱人。", scores: { allage: 4 } }
+        ]
+      },
+      {
+        text: "夜里十一点，对方发来「今天有点崩了」。你会？",
+        options: [
+          { text: "打电话过去，让他把事情说完，再告诉他怎么收。", scores: { nianxia: 4 } },
+          { text: "回：「先缓一缓。你是需要我听，还是需要我陪？」然后把空间留给他。", scores: { nianshang: 4 } },
+          { text: "「我现在方便。要不要语音，一起吐一会儿？」", scores: { tongling: 4 } },
+          { text: "回得不长：「我在。你想说，再找我。」然后把手机放下，继续做自己的事。", scores: { allage: 4 } }
+        ]
+      }
+    ]
+  };
+  /* =========================  引擎（通常不必改）  ========================= */
+  const FONT_SERIF = '"Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif';
+  const FONT_SANS  = '"Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  const KEYS = ["A", "B", "C", "D", "E", "F"];
+
+  const state = {
+    screen: "home",
+    qIndex: 0,
+    answers: [],
+    result: null,
+    bars: [],
+    cardUrl: ""
+  };
+
+  const app = document.getElementById("app");
+  const toastEl = document.getElementById("toast");
+  let toastTimer = 0;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("is-on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 2400);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function nl2br(s) {
+    return escapeHtml(s).replace(/\n/g, "<br>");
+  }
+
+  function render() {
+    document.title = QUIZ_CONFIG.title;
+    if (state.screen === "home") renderHome();
+    else if (state.screen === "quiz") renderQuiz();
+    else if (state.screen === "generating") renderGenerating();
+    else if (state.screen === "result") renderResult();
+  }
+
+  function renderHome() {
+    const chips = QUIZ_CONFIG.subtitle.split("/").map((t) => t.trim()).filter(Boolean);
+    app.innerHTML = `
+      <section class="view is-on" id="view-home">
+        <div class="home-top">
+          <div class="home-eyebrow-wrap">
+            <div class="eyebrow">${escapeHtml(QUIZ_CONFIG.kicker)}</div>
+          </div>
+          <div class="ornament" aria-hidden="true"></div>
+          <h1 class="home-title">${formatTitle(QUIZ_CONFIG.title)}</h1>
+          <div class="chips">
+            ${chips.map((c) => `<span class="chip">${escapeHtml(c)}</span>`).join("")}
+          </div>
+          <p class="home-lead">${nl2br(QUIZ_CONFIG.lead)}</p>
+        </div>
+        <div>
+          <button type="button" class="cta-primary" id="btn-start">${escapeHtml(QUIZ_CONFIG.startLabel)}</button>
+          <p class="home-meta">${nl2br(QUIZ_CONFIG.homeMeta)}</p>
+        </div>
+        <p class="home-footer">${escapeHtml(QUIZ_CONFIG.homeFoot)}</p>
+      </section>`;
+    document.getElementById("btn-start").addEventListener("click", startQuiz);
+  }
+
+  function formatTitle(title) {
+    if (title === "你身上最招哪种人？") {
+      return "你身上<br><em>最招哪种人？</em>";
+    }
+    const t = escapeHtml(title);
+    if (t.length > 8) {
+      const cut = Math.ceil(t.length / 2);
+      return t.slice(0, cut) + "<br>" + t.slice(cut);
+    }
+    return t;
+  }
+
+  function startQuiz() {
+    state.screen = "quiz";
+    state.qIndex = 0;
+    state.answers = [];
+    state.result = null;
+    state.bars = [];
+    state.cardUrl = "";
+    render();
+  }
+
+  function renderQuiz() {
+    const q = QUIZ_CONFIG.questions[state.qIndex];
+    const total = QUIZ_CONFIG.questions.length;
+    const n = state.qIndex + 1;
+    const pct = (state.qIndex / total) * 100;
+    app.innerHTML = `
+      <section class="view is-on" id="view-quiz">
+        <div class="quiz-bar">
+          <button type="button" class="back-btn" id="btn-back" ${state.qIndex === 0 ? "disabled" : ""} aria-label="上一题">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span>QUESTION</span>
+              <span>${String(n).padStart(2, "0")}  /  ${String(total).padStart(2, "0")}</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="q-kicker">${escapeHtml(QUIZ_CONFIG.quizKicker)}</div>
+        <h2 class="q-title">${escapeHtml(q.text)}</h2>
+        <div class="options" id="options">
+          ${q.options.map((opt, i) => `
+            <button type="button" class="option" data-index="${i}">
+              <span class="opt-key">${KEYS[i]}</span>
+              <span class="opt-text">${escapeHtml(opt.text)}</span>
+            </button>`).join("")}
+        </div>
+      </section>`;
+    requestAnimationFrame(() => {
+      const fill = app.querySelector(".progress-fill");
+      if (fill) fill.style.width = (n / total) * 100 + "%";
+    });
+    document.getElementById("btn-back").addEventListener("click", goBack);
+    app.querySelectorAll(".option").forEach((btn) => {
+      btn.addEventListener("click", () => pickOption(Number(btn.dataset.index), btn));
+    });
+  }
+
+  function goBack() {
+    if (state.qIndex === 0) return;
+    state.answers.pop();
+    state.qIndex -= 1;
+    render();
+  }
+
+  function pickOption(index, btn) {
+    if (app.dataset.locked === "1") return;
+    app.dataset.locked = "1";
+    btn.classList.add("is-picked");
+    state.answers[state.qIndex] = index;
+    const last = state.qIndex >= QUIZ_CONFIG.questions.length - 1;
+    setTimeout(() => {
+      app.dataset.locked = "0";
+      if (last) finishQuiz();
+      else {
+        state.qIndex += 1;
+        render();
+      }
+    }, 220);
+  }
+
+  function emptyScores() {
+    const t = {};
+    QUIZ_CONFIG.results.forEach((r) => { t[r.id] = 0; });
+    return t;
+  }
+
+  function totalsFromAnswers(answers) {
+    const t = emptyScores();
+    answers.forEach((optIndex, qi) => {
+      const opt = QUIZ_CONFIG.questions[qi].options[optIndex];
+      if (!opt) return;
+      Object.entries(opt.scores).forEach(([k, v]) => {
+        t[k] = (t[k] || 0) + v;
+      });
+    });
+    return t;
+  }
+
+  function hitsHidden(answers) {
+    const hidden = QUIZ_CONFIG.hidden;
+    if (!hidden || !hidden.matches || !hidden.matches.length) return false;
+    const need = hidden.minHits == null ? hidden.matches.length : hidden.minHits;
+    let hits = 0;
+    hidden.matches.forEach((m) => {
+      if (answers[m.q] === m.option) hits += 1;
+    });
+    return hits >= need;
+  }
+
+  function pickResult(totals, answers) {
+    if (hitsHidden(answers) && QUIZ_CONFIG.hidden && QUIZ_CONFIG.hidden.result) {
+      return QUIZ_CONFIG.hidden.result;
+    }
+    let best = QUIZ_CONFIG.results[0];
+    let bestScore = -1;
+    for (const r of QUIZ_CONFIG.results) {
+      const v = totals[r.id] || 0;
+      if (v > bestScore) {
+        bestScore = v;
+        best = r;
+      }
+    }
+    return best;
+  }
+
+  function toPercents(values) {
+    const sum = values.reduce((a, b) => a + b, 0);
+    if (sum <= 0) {
+      const even = Math.floor(100 / values.length);
+      const arr = values.map(() => even);
+      arr[0] += 100 - even * values.length;
+      return arr;
+    }
+    const raw = values.map((v) => (v / sum) * 100);
+    const floored = raw.map(Math.floor);
+    let remain = 100 - floored.reduce((a, b) => a + b, 0);
+    const order = raw
+      .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+      .sort((a, b) => b.frac - a.frac);
+    for (let k = 0; k < remain; k++) floored[order[k % order.length].i] += 1;
+    return floored;
+  }
+
+  function computeBreakdown(totals) {
+    const items = QUIZ_CONFIG.breakdown.items;
+    const raw = items.map((item) => {
+      let v = 0;
+      (item.from || []).forEach((k) => { v += totals[k] || 0; });
+      (item.share || []).forEach((k) => { v += (totals[k] || 0) * 0.5; });
+      return v;
+    });
+    const pcts = toPercents(raw);
+    return items.map((item, i) => ({
+      key: item.key,
+      label: item.label,
+      raw: raw[i],
+      pct: pcts[i]
+    }));
+  }
+
+  function finishQuiz() {
+    const totals = totalsFromAnswers(state.answers);
+    state.result = pickResult(totals, state.answers);
+    state.bars = computeBreakdown(totals);
+    state.screen = "generating";
+    render();
+    Promise.resolve()
+      .then(() => ensureFonts())
+      .then(() => new Promise((r) => setTimeout(r, 640)))
+      .then(() => drawResultCard(state.result, state.bars))
+      .then((url) => {
+        state.cardUrl = url;
+        state.screen = "result";
+        render();
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast("结果卡生成失败，请重试");
+        state.screen = "home";
+        render();
+      });
+  }
+
+  function renderGenerating() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-generating">
+        <div class="gen-wrap">
+          <div class="gen-mark" aria-hidden="true"></div>
+          <p class="gen-text">正在生成你的结果卡</p>
+          <p class="gen-sub">稍等片刻</p>
+        </div>
+      </section>`;
+  }
+
+  function renderResult() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-result">
+        <div class="result-head">
+          <div class="eyebrow">你的类型已生成</div>
+          <p class="result-hint">长按结果卡，即可保存到相册</p>
+        </div>
+        <img id="result-card-img" alt="${escapeHtml(state.result.name)} 结果卡" src="${state.cardUrl}" />
+        <div class="result-actions">
+          <button type="button" class="cta-save" id="btn-save">保存结果卡</button>
+          <button type="button" class="cta-ghost" id="btn-retry">重新测试</button>
+        </div>
+        <p class="result-note">也可以直接长按上图保存  ·  去评论区报出你的类型</p>
+      </section>`;
+    document.getElementById("btn-save").addEventListener("click", saveOrShareCard);
+    document.getElementById("btn-retry").addEventListener("click", startQuiz);
+  }
+
+  async function saveOrShareCard() {
+    const img = document.getElementById("result-card-img");
+    if (!img || !img.src) return;
+    const filename = `${QUIZ_CONFIG.card.filePrefix}-${state.result.name}.png`;
+    try {
+      const blob = await (await fetch(img.src)).blob();
+      const file = new File([blob], filename, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: state.result.name, text: state.result.quote });
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = img.src;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      showToast("长按上方结果卡，即可保存到相册");
+    }
+  }
+
+  async function ensureFonts() {
+    if (!document.fonts) return;
+    try { await document.fonts.ready; } catch (e) {}
+    const faces = [
+      `700 112px ${FONT_SERIF}`,
+      `400 42px ${FONT_SERIF}`,
+      `700 42px ${FONT_SERIF}`,
+      `400 28px ${FONT_SANS}`,
+      `500 28px ${FONT_SANS}`,
+      `700 30px ${FONT_SANS}`
+    ];
+    await Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null)));
+  }
+
+  function wrapText(ctx, text, maxWidth) {
+    const noStart = "。，、；：！？）》」』…";
+    const preferred = "。！？；，、 ";
+    const out = [];
+
+    function fixOrphans(block) {
+      if (block.length < 2) return block;
+      const minLast = 5;
+      const last = [...block[block.length - 1]];
+      if (last.length >= minLast) return block;
+      const prev = [...block[block.length - 2]];
+      while (last.length < minLast && prev.length > minLast + 1) {
+        last.unshift(prev.pop());
+      }
+      block[block.length - 2] = prev.join("");
+      block[block.length - 1] = last.join("");
+      return block;
+    }
+
+    for (const paragraph of String(text || "").split("\n")) {
+      const chars = [...paragraph];
+      if (!chars.length) { out.push(""); continue; }
+      const para = [];
+      let line = "";
+      let breakAt = -1;
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        const test = line + ch;
+        const overflow = !!(line && ctx.measureText(test).width > maxWidth && !noStart.includes(ch));
+        if (overflow) {
+          const arr = [...line];
+          if (breakAt >= 4 && breakAt < arr.length) {
+            para.push(arr.slice(0, breakAt).join(""));
+            line = arr.slice(breakAt).join("");
+            breakAt = -1;
+            i -= 1;
+            continue;
+          }
+          para.push(line);
+          line = "";
+          breakAt = -1;
+          i -= 1;
+          continue;
+        }
+        line = test;
+        if (preferred.includes(ch)) breakAt = [...line].length;
+      }
+      if (line) para.push(line);
+      out.push.apply(out, fixOrphans(para));
+    }
+    return out;
+  }
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function getCardPalette(result) {
+    const theme = (result && result.theme) || {};
+    const dark = theme.id === "black-gold" || theme.mode === "dark";
+    if (dark) {
+      const gold = theme.gold || "#D8B26E";
+      const ivory = theme.ivory || "#F5EFE6";
+      const bg = theme.bg || "#171513";
+      return {
+        bg: bg,
+        wash: "rgba(216,178,110,0.10)",
+        ink: ivory,
+        accent: gold,
+        track: "rgba(216,178,110,0.18)",
+        faint: "rgba(245,239,230,0.48)",
+        hook: "rgba(245,239,230,0.78)",
+        summary: "rgba(245,239,230,0.70)",
+        frame: "rgba(216,178,110,0.62)",
+        frameInner: "rgba(216,178,110,0.28)",
+        divider: "rgba(216,178,110,0.28)",
+        tagStroke: "rgba(216,178,110,0.70)",
+        badgeBg: gold,
+        badgeText: bg,
+        grainA: "#000000",
+        grainB: "#D8B26E",
+        grainAlpha: 0.055
+      };
+    }
+    return {
+      bg: "#FAF7F2",
+      wash: "rgba(200,90,83,0.07)",
+      ink: "#1E1B18",
+      accent: "#C85A53",
+      track: "#EFE8DD",
+      faint: "rgba(30,27,24,0.48)",
+      hook: "rgba(30,27,24,0.72)",
+      summary: "rgba(30,27,24,0.62)",
+      frame: "rgba(30,27,24,0.22)",
+      frameInner: "rgba(30,27,24,0.10)",
+      divider: "rgba(30,27,24,0.14)",
+      tagStroke: "rgba(30,27,24,0.22)",
+      badgeBg: "#C85A53",
+      badgeText: "#fff",
+      grainA: "#1E1B18",
+      grainB: "#FFFFFF",
+      grainAlpha: 0.045
+    };
+  }
+
+  function drawResultCard(result, bars) {
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const MX = 128;
+    const contentW = W - MX * 2;
+    const pal = getCardPalette(result);
+    const ink = pal.ink;
+    const rose = pal.accent;
+    const sand = pal.track;
+    const cream = pal.bg;
+    const faint = pal.faint;
+
+    // background
+    ctx.fillStyle = cream;
+    ctx.fillRect(0, 0, W, H);
+    const wash = ctx.createLinearGradient(0, 0, 0, 640);
+    wash.addColorStop(0, pal.wash);
+    wash.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, W, 640);
+
+    // subtle grain under the type (keeps glyphs crisp)
+    ctx.save();
+    ctx.globalAlpha = pal.grainAlpha;
+    for (let i = 0; i < 14000; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? pal.grainA : pal.grainB;
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1.2, 1.2);
+    }
+    ctx.restore();
+
+    // double frame
+    ctx.strokeStyle = pal.frame;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(48, 48, W - 96, H - 96);
+    ctx.strokeStyle = pal.frameInner;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(64, 64, W - 128, H - 128);
+
+    // stamp
+    const stamp = result.stamp || QUIZ_CONFIG.card.stamp || "招";
+    const sx = W - 168;
+    const sy = 168;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 52, 0, Math.PI * 2);
+    ctx.strokeStyle = rose;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(sx, sy, 44, 0, Math.PI * 2);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = rose;
+    ctx.font = `700 40px ${FONT_SERIF}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(stamp, sx, sy + 2);
+
+    let y = 150;
+
+    // eyebrow
+    ctx.fillStyle = faint;
+    ctx.font = `400 22px ${FONT_SANS}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.letterSpacing = "8px";
+    try { ctx.letterSpacing = "0.22em"; } catch (e) {}
+    ctx.fillText(result.eyebrow || QUIZ_CONFIG.card.eyebrow, MX, y);
+    ctx.letterSpacing = "0px";
+
+    // badge
+    y = 210;
+    const badge = result.badge || QUIZ_CONFIG.card.badge;
+    ctx.font = `500 22px ${FONT_SANS}`;
+    const badgeW = ctx.measureText(badge).width + 48;
+    const badgeH = 44;
+    const badgeX = MX;
+    roundedRect(ctx, badgeX, y, badgeW, badgeH, 22);
+    ctx.fillStyle = pal.badgeBg;
+    ctx.fill();
+    ctx.fillStyle = pal.badgeText;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, badgeX + 24, y + badgeH / 2 + 1);
+
+    // title
+    y = 430;
+    ctx.fillStyle = ink;
+    ctx.font = `700 108px ${FONT_SERIF}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    const titleLines = wrapText(ctx, result.name, contentW);
+    const titleSize = titleLines.length > 1 ? 84 : 108;
+    ctx.font = `700 ${titleSize}px ${FONT_SERIF}`;
+    const titleLines2 = wrapText(ctx, result.name, contentW);
+    const titleLh = titleSize + 16;
+    titleLines2.forEach((line, i) => {
+      ctx.fillText(line, MX, y + i * titleLh);
+    });
+    y += titleLines2.length * titleLh + 28;
+
+    // hook
+    ctx.fillStyle = pal.hook;
+    ctx.font = `400 30px ${FONT_SANS}`;
+    const hookLines = wrapText(ctx, result.hook, contentW);
+    hookLines.forEach((line) => {
+      ctx.fillText(line, MX, y);
+      y += 48;
+    });
+    y += 28;
+
+    // tags
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.textBaseline = "middle";
+    let tagX = MX;
+    const tagY = y;
+    const tagH = 52;
+    (result.tags || []).slice(0, 3).forEach((tag) => {
+      const tw = ctx.measureText(tag).width + 40;
+      roundedRect(ctx, tagX, tagY, tw, tagH, 26);
+      ctx.strokeStyle = pal.tagStroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = ink;
+      ctx.textAlign = "center";
+      ctx.fillText(tag, tagX + tw / 2, tagY + tagH / 2 + 1);
+      tagX += tw + 16;
+      ctx.textAlign = "left";
+    });
+    y = tagY + tagH + 70;
+
+    // quote
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("「", MX - 8, y);
+    y += 18;
+    ctx.fillStyle = ink;
+    ctx.font = `400 40px ${FONT_SERIF}`;
+    const quote = String(result.quote || "").replace(/^[「『]/, "").replace(/[」』]$/, "");
+    const quoteLines = wrapText(ctx, quote, contentW - 20);
+    quoteLines.forEach((line) => {
+      ctx.fillText(line, MX + 8, y);
+      y += 66;
+    });
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textAlign = "right";
+    ctx.fillText("」", W - MX + 8, y + 8);
+    ctx.textAlign = "left";
+    y += 56;
+
+    // divider
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, y);
+    ctx.lineTo(W - MX, y);
+    ctx.stroke();
+    y += 70;
+
+    // breakdown title
+    ctx.fillStyle = faint;
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.fillText(QUIZ_CONFIG.card.breakdownTitle, MX, y);
+    y += 54;
+
+    // bars — reserve footer space so nothing collides
+    const footerTop = 1728;
+    const barCount = Math.max(bars.length, 1);
+    const barBlock = Math.min(140, Math.max(110, (footerTop - 40 - y) / barCount));
+    bars.forEach((bar) => {
+      ctx.fillStyle = ink;
+      ctx.font = `500 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(bar.label, MX, y);
+      ctx.textAlign = "right";
+      ctx.fillText(bar.pct + "%", W - MX, y);
+      ctx.textAlign = "left";
+
+      const trackY = y + 24;
+      const trackH = 16;
+      roundedRect(ctx, MX, trackY, contentW, trackH, 8);
+      ctx.fillStyle = sand;
+      ctx.fill();
+      const fillW = Math.max(bar.pct > 0 ? 16 : 0, Math.round(contentW * (bar.pct / 100)));
+      if (fillW > 0) {
+        roundedRect(ctx, MX, trackY, fillW, trackH, 8);
+        ctx.fillStyle = rose;
+        ctx.fill();
+      }
+      y += barBlock;
+    });
+
+    // summary, if it still fits above the pinned footer
+    const fy = 1764;
+    if (result.summary) {
+      ctx.fillStyle = pal.summary;
+      ctx.font = `400 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      const sumLines = wrapText(ctx, result.summary, contentW);
+      const sumLh = 48;
+      const sumBlock = sumLines.length * sumLh;
+      let sy = y + 12;
+      if (sy + sumBlock > fy - 36) {
+        sy = Math.max(y, fy - 36 - sumBlock);
+      }
+      if (sy + sumBlock <= fy - 24) {
+        sumLines.forEach((line, i) => {
+          ctx.fillText(line, MX, sy + i * sumLh);
+        });
+      }
+    }
+
+    // footer pinned
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, fy);
+    ctx.lineTo(W - MX, fy);
+    ctx.stroke();
+
+    ctx.fillStyle = ink;
+    ctx.font = `400 24px ${FONT_SANS}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(result.footer || QUIZ_CONFIG.card.footer, W / 2, fy + 50);
+    ctx.fillStyle = faint;
+    ctx.font = `400 20px ${FONT_SANS}`;
+    ctx.fillText(result.disclaimer || QUIZ_CONFIG.card.disclaimer, W / 2, fy + 90);
+
+    const url = canvas.toDataURL("image/png");
+    return url;
+  }
+
+  render();
+  </script>
+</body>
+</html>

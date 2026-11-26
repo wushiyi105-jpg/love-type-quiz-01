@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#F2F4F7" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="测你是哪种打工人？班味浓度、职场段位。8 道工位情景题，生成可保存的电子工牌。" />
+  <title>测你是哪种打工人？</title>
+  <style>
+    :root {
+      --paper: #F2F4F7;
+      --cream: #F2F4F7;
+      --ink: #1E293B;
+      --ink-soft: #334155;
+      --ink-faint: #64748B;
+      --espresso: #7C4F2B;
+      --rose: #7C4F2B;
+      --rose-deep: #5C3A1F;
+      --rose-soft: rgba(255, 224, 102, 0.35);
+      --highlight: #FFE066;
+      --highlight-deep: #F5C518;
+      --navy: #1E293B;
+      --sand: #E8EDF3;
+      --sand-dark: #D5DCE6;
+      --card: #FFFFFF;
+      --line: rgba(30, 41, 59, 0.14);
+      --shadow: 0 12px 36px rgba(30, 41, 59, 0.08);
+      --font-serif: "Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      --font-sans: "Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --obsidian: #13151A;
+      --gold: #D8B26E;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+    button {
+      font-family: inherit;
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    img { display: block; max-width: 100%; }
+
+    #app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      position: relative;
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(rgba(30, 41, 59, 0.09) 1px, transparent 1.2px),
+        linear-gradient(rgba(30, 41, 59, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30, 41, 59, 0.035) 1px, transparent 1px);
+      background-size: 18px 18px, 36px 36px, 36px 36px;
+      background-position: 0 0, 0 0, 0 0;
+    }
+
+    .view {
+      display: none;
+      min-height: 100dvh;
+      padding: calc(22px + var(--safe-top)) 20px calc(28px + var(--safe-bottom));
+      animation: rise 0.48s ease both;
+    }
+    .view.is-on { display: flex; flex-direction: column; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Home: electronic ID badge ===== */
+    .lanyard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+      margin-bottom: -16px;
+    }
+    .lanyard-strap {
+      width: 16px;
+      height: 26px;
+      background: linear-gradient(180deg, #1E293B, #334155);
+      border-radius: 2px 2px 0 0;
+    }
+    .lanyard-hole {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 3px solid var(--navy);
+      box-shadow:
+        inset 0 0 0 6px #fff,
+        inset 0 0 0 8px var(--navy),
+        0 2px 0 rgba(30, 41, 59, 0.12);
+    }
+
+    .badge-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px 18px 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .badge-card::before {
+      content: "";
+      position: absolute;
+      top: 72px;
+      right: -36px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 10px solid rgba(124, 79, 43, 0.07);
+      pointer-events: none;
+      transform: rotate(-12deg);
+    }
+
+    .badge-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 18px;
+    }
+    .badge-topbar .clock {
+      color: var(--espresso);
+      font-weight: 500;
+    }
+
+    .home-eyebrow-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.20em;
+      color: var(--ink-faint);
+    }
+    .eyebrow::before,
+    .eyebrow::after {
+      content: "";
+      flex: 0 0 18px;
+      height: 1px;
+      background: var(--line);
+    }
+    .eyebrow::before { flex: 0 0 22px; }
+
+    .home-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(32px, 9.2vw, 40px);
+      line-height: 1.22;
+      letter-spacing: 0.04em;
+      text-align: center;
+      font-feature-settings: "kern";
+    }
+    .home-title em {
+      font-style: normal;
+      background-image: linear-gradient(transparent 58%, var(--highlight) 58%, var(--highlight) 92%, transparent 92%);
+      color: var(--ink);
+      padding: 0 0.06em;
+    }
+
+    .chips {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 18px 0 22px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      background: var(--sand);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+
+    .home-lead {
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--ink-soft);
+      max-width: 21em;
+      margin: 0 auto 28px;
+    }
+
+    .cta-primary {
+      display: block;
+      width: 100%;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 8px;
+      height: 52px;
+      font-size: 16px;
+      letter-spacing: 0.14em;
+      position: relative;
+      transition: transform 0.2s ease, background 0.2s ease;
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+    }
+    .cta-primary::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--highlight);
+      transform: translateY(-50%);
+    }
+    .cta-primary:active { transform: scale(0.98); background: #0F172A; }
+
+    .home-meta {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--ink-faint);
+      line-height: 1.7;
+      letter-spacing: 0.04em;
+    }
+
+    .barcode {
+      height: 32px;
+      margin: 22px 12px 8px;
+      background: repeating-linear-gradient(
+        90deg,
+        #1E293B 0 2px,
+        transparent 2px 3.5px,
+        #1E293B 3.5px 5px,
+        transparent 5px 8px,
+        #1E293B 8px 9px,
+        transparent 9px 11px,
+        #1E293B 11px 14px,
+        transparent 14px 16px
+      );
+      opacity: 0.82;
+      border-radius: 1px;
+    }
+
+    .home-footer {
+      margin-top: 4px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+    }
+
+    .ornament {
+      width: 8px;
+      height: 8px;
+      margin: 0 auto 16px;
+      background: var(--highlight);
+      border: 1px solid var(--navy);
+      transform: rotate(45deg);
+    }
+
+    /* ===== Quiz ===== */
+    .quiz-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--ink-soft);
+      flex: 0 0 36px;
+      background: #fff;
+      transition: background 0.15s ease;
+    }
+    .back-btn:disabled { opacity: 0.3; }
+    .back-btn:not(:disabled):active { background: var(--sand); }
+    .progress-wrap { flex: 1; }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+    .progress-track {
+      height: 4px;
+      background: var(--sand-dark);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--highlight);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    .q-kicker {
+      margin-top: 18px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--espresso);
+    }
+    .q-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      margin: 10px 0 24px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+    }
+    .option:active { transform: scale(0.985); }
+    .option.is-picked {
+      border-color: var(--navy);
+      background: #FFF8D6;
+    }
+    .opt-key {
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      letter-spacing: 0;
+      color: var(--ink-soft);
+      background: var(--sand);
+      margin-top: 1px;
+    }
+    .option.is-picked .opt-key {
+      background: var(--navy);
+      color: var(--highlight);
+    }
+    .opt-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink);
+      padding-top: 1px;
+    }
+
+    /* ===== Generating / Result ===== */
+    .gen-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .gen-mark {
+      width: 14px;
+      height: 14px;
+      background: var(--highlight);
+      border: 1px solid var(--navy);
+      transform: rotate(45deg);
+      animation: pulse 1.1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: rotate(45deg) scale(0.9); }
+      50% { opacity: 1; transform: rotate(45deg) scale(1.05); }
+    }
+    .gen-text {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      letter-spacing: 0.12em;
+    }
+    .gen-sub { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.08em; }
+
+    .result-head {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .result-head .eyebrow { justify-content: center; margin-bottom: 8px; }
+    .result-hint {
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+    }
+
+    #result-card-img {
+      width: min(100%, calc((100dvh - 220px) * 1080 / 1920));
+      height: auto;
+      margin: 0 auto;
+      border-radius: 14px;
+      box-shadow: 0 16px 50px rgba(30, 41, 59, 0.14);
+      background: var(--sand);
+      user-select: none;
+      -webkit-touch-callout: default;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .cta-save {
+      height: 48px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
+    .cta-save:active { transform: scale(0.98); background: #0F172A; }
+    .cta-ghost {
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+    }
+    .cta-ghost:active { background: var(--sand); }
+
+    .result-note {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(12px);
+      background: var(--navy);
+      color: #fff;
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 20;
+      white-space: nowrap;
+    }
+    .toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .view, .gen-mark, .progress-fill, .cta-primary, .option { animation: none; transition: none; }
+    }
+
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+  /* =============================================================================
+   * QUIZ_CONFIG — 选题 5《测你是哪种打工人（班味浓度 / 职场段位）》
+   * -----------------------------------------------------------------------------
+   * 换题库只需改这一份配置。计分与隐藏款规则与选题 1 相同：
+   *   每个 option.scores 的 key 必须与 results[].id 一致，分值为 0–4 的整数。
+   *   先判定隐藏款；未触发时，累加 8 题 scores，总分最高的结果档胜出；平分取靠前档。
+   *   隐藏档不要写入 option.scores。三项指标 = from 得分 + share 得分 × 0.5，再归一化。
+   *
+   * 本选题隐藏款触发（写死在 hidden.matches，供自己测 / 截图，不要发到评论区）：
+   *   8 题中标定 4 个「反向拿捏 / 先定规则」选项，至少命中 3 个即出「反客为主掌局者」。
+   *   路径占比：C(4,3)×3×4^4 + 4^4 = 3328 / 65536 ≈ 5.08%。
+   *     第 1 题 D  「先列今日三件要事。能换成筹码的先做，其余的往后排。」
+   *     第 3 题 D  「进门先问：『今天要拍板什么？没有议题，我先去赶项目。』」
+   *     第 6 题 D  「『锻炼可以，职级和调薪得写进目标，否则这次我过一下。』」
+   *     第 7 题 D  「先谈责任边界、资源和决策权。谈不拢，就不接。」
+   *   自测推荐完整路径（8 题选项）：D / B / D / B / B / D / D / D
+   *   （第 2、4、5、8 题可任选；只要上面 4 条里至少中 3 条，就会出黑金 VIP 工牌。）
+   * ============================================================================= */
+  const QUIZ_CONFIG = {
+    id: "da-gong-ren-05",
+    title: "测你是哪种打工人？",
+    subtitle: "班味浓度 / 职场段位",
+    kicker: "打工人班味体检  ·  05",
+    lead: "不是在测你累不累。\n是在测，你在工位上到底属于哪一段。",
+    startLabel: "开始班味体检",
+    homeMeta: "8 道工位情景题  ·  约 2 分钟\n结束后生成可保存的电子工牌",
+    homeFoot: "娱乐测试  ·  工牌可长按保存分享",
+    quizKicker: "工位情景题",
+
+    card: {
+      eyebrow: "班味体检报告",
+      badge: "打工人电子工牌",
+      stamp: "工",
+      breakdownTitle: "三项职场指标",
+      footer: "长按保存工牌 · 评论区报出你的段位",
+      disclaimer: "娱乐测试 · 结果仅供自娱和分享",
+      filePrefix: "打工人段位"
+    },
+
+    breakdown: {
+      items: [
+        { key: "banwei", label: "班味浓度",   from: ["jiuhuo"],  share: ["yinshen"] },
+        { key: "border", label: "抗压边界",   from: ["moyu"],    share: ["yinshen", "gaoqian"] },
+        { key: "sober",  label: "搞钱清醒度", from: ["gaoqian"], share: ["moyu"] }
+      ]
+    },
+
+    results: [
+      {
+        id: "yinshen",
+        name: "职场隐形人",
+        hook: "低能耗生存大师。干活不冒泡，背锅的时候，也找不到你。",
+        tags: ["低能耗", "不冒泡", "生存大师"],
+        quote: "我不在风口上。所以风也吹不倒我。",
+        summary: "你把存在感控制得很低：该做的做完，多余的社交和锅，都轻轻绕开。不是摆烂，是一种很安静的活法。"
+      },
+      {
+        id: "moyu",
+        name: "顶级摸鱼艺术家",
+        hook: "情绪稳定，精准控时。班味浓度常年停在 15%，从不容自己内耗。",
+        tags: ["情绪稳定", "精准控时", "班味 15%"],
+        quote: "活是做不完的。下班铃，才是 KPI。",
+        summary: "你很少为工作情绪买单。什么该做、做到哪、何时走人，心里有标尺。同事看你轻松，其实是你把边界量得很准。"
+      },
+      {
+        id: "jiuhuo",
+        name: "人形救火队长",
+        hook: "靠谱到被疯狂加活。嘴上骂着「怎么又是我」，手里已经把火扑灭了。",
+        tags: ["靠谱到加活", "嘴上骂", "心里扛"],
+        quote: "没倒的公司，总有人在扛。常常是你。",
+        summary: "你会被当成定海神针。难题来了先想到你，功劳未必记在你头上。你不是不会拒绝，是拒绝之前，火已经烧到手上。"
+      },
+      {
+        id: "gaoqian",
+        name: "清醒搞钱狠人",
+        hook: "把公司当跳板。情绪不内耗，只看回报，每次付出都在算账。",
+        tags: ["当跳板", "不内耗", "只看回报"],
+        quote: "我可以很拼。但请先把价码放到桌上。",
+        summary: "你很少为情绪和认同感加班。事情值不值得、能不能换成职级或钱，你比谁都清醒。公司是站点，不是终点。"
+      }
+    ],
+
+    /* -----------------------------------------------------------------
+     * hidden — 稀有隐藏档「反客为主掌局者」
+     * 触发逻辑（确定性，与普通 4 档计分互不干扰）：
+     *   下列 4 个选项代表同一类「先定规则、反向拿捏、把议程抓在自己手里」的选择。
+     *   answers[q] === option 计 1 次命中；命中数 >= minHits（3）则出隐藏款。
+     *   q / option 均从 0 起算：q=0 是第 1 题，option=3 是 D。
+     *
+     * 精确组合：
+     *   第 1 题 D（q:0, option:3）
+     *   第 3 题 D（q:2, option:3）
+     *   第 6 题 D（q:5, option:3）
+     *   第 7 题 D（q:6, option:3）
+     *   4 条里至少中 3 条。约 5.08% 路径（3328 / 65536）。
+     *
+     * 自测推荐完整 8 题路径（0-index）：[3, 1, 3, 1, 1, 3, 3, 3]
+     *   即 D / B / D / B / B / D / D / D
+     * ----------------------------------------------------------------- */
+    hidden: {
+      minHits: 3,
+      matches: [
+        { q: 0, option: 3 },
+        { q: 2, option: 3 },
+        { q: 5, option: 3 },
+        { q: 6, option: 3 }
+      ],
+      result: {
+        id: "hidden-boss",
+        name: "反客为主掌局者",
+        hook: "职场天花板。不是被安排的人，是给这个房间定节奏的人。",
+        tags: ["反向拿捏", "定节奏", "天花板"],
+        quote: "不是我配合你的议程。是你，走进了我的议程。",
+        summary: "你极少被临时的「在吗」牵走。议题、边界、交换条件，都由你先摊到桌上。老板要找你，得按你的节奏来。",
+        eyebrow: "隐藏款 · 董事会 VIP",
+        badge: "★ 董事会 VIP 通行证",
+        stamp: "局",
+        footer: "长按保存工牌 · 评论区晒出你的隐藏款",
+        theme: {
+          id: "black-gold",
+          bg: "#13151A",
+          gold: "#D8B26E",
+          ivory: "#F5EFE6"
+        }
+      }
+    },
+
+    questions: [
+      {
+        text: "周一早上，你打开电脑的第一件事通常是？",
+        options: [
+          { text: "先把桌面收拾干净，再默默接着改昨天那份还没人催的表。", scores: { yinshen: 3, moyu: 1 } },
+          { text: "咖啡续上，邮件全标已读，先给自己十分钟「开机」。", scores: { moyu: 3, gaoqian: 1 } },
+          { text: "群里已经在 @ 我了。边回边叹气：怎么又是我。", scores: { jiuhuo: 3, yinshen: 1 } },
+          { text: "先列今日三件要事。能换成筹码的先做，其余的往后排。", scores: { gaoqian: 3, moyu: 1 } }
+        ]
+      },
+      {
+        text: "晚上 11 点，老板微信甩来一个「在吗」。你会？",
+        options: [
+          { text: "已读。屏幕扣上，假装已经睡了。", scores: { yinshen: 3, moyu: 1 } },
+          { text: "回「刚看到，明天一上班处理」，然后继续刷剧。", scores: { moyu: 3, gaoqian: 1 } },
+          { text: "秒回「在的！」，翻身坐起来把文件改了。", scores: { jiuhuo: 4 } },
+          { text: "不回「在吗」。第二天把方案和边界一起丢过去。", scores: { gaoqian: 3, moyu: 1 } }
+        ]
+      },
+      {
+        text: "临时被拉进一个没有议题的会，你更像哪种？",
+        options: [
+          { text: "摄像头关掉，麦也关。人在会里，魂在摸鱼。", scores: { moyu: 3, yinshen: 1 } },
+          { text: "打开文档装作记笔记，全程不发言。", scores: { yinshen: 3, moyu: 1 } },
+          { text: "看着会开歪，还是把场圆回来。散会后，又被留下收尾。", scores: { jiuhuo: 4 } },
+          { text: "进门先问：「今天要拍板什么？没有议题，我先去赶项目。」", scores: { gaoqian: 4 } }
+        ]
+      },
+      {
+        text: "你做的方案，被同事在会上讲成了自己的。你会？",
+        options: [
+          { text: "当场不拆台。会后把原文件和发送记录，默默存好。", scores: { yinshen: 3, gaoqian: 1 } },
+          { text: "心里翻了个白眼，继续想中午吃什么。不值得心跳加速。", scores: { moyu: 3, yinshen: 1 } },
+          { text: "会后主动补位：「那页数据我来跟进。」活又回到自己手上。", scores: { jiuhuo: 3, yinshen: 1 } },
+          { text: "不吵。会后把完整版本抄送相关人，功过写得很清楚。", scores: { gaoqian: 4 } }
+        ]
+      },
+      {
+        text: "周五 17:58，有人甩来一个「不急」的需求。你会？",
+        options: [
+          { text: "装没看见，背包下班。周一再假装才刷到。", scores: { yinshen: 3, moyu: 1 } },
+          { text: "回「收到，下周一排期」，秒关电脑往电梯走。", scores: { moyu: 4 } },
+          { text: "「不急」我信过。还是今晚先做一版，免得周一被催。", scores: { jiuhuo: 4 } },
+          { text: "回「这周额度已满，下周三前给初版。」然后准点走。", scores: { gaoqian: 3, moyu: 1 } }
+        ]
+      },
+      {
+        text: "领导说「这次就算锻炼，没有额外预算」。你会？",
+        options: [
+          { text: "嗯一声接下来。回家把情绪关紧，谁也看不出来。", scores: { yinshen: 3, moyu: 1 } },
+          { text: "表面答应，实际把工作量精确压在「看起来在做」的程度。", scores: { moyu: 3, gaoqian: 1 } },
+          { text: "嘴上骂「又画饼」，手上已经把项目计划拉好了。", scores: { jiuhuo: 4 } },
+          { text: "「锻炼可以，职级和调薪得写进目标，否则这次我过一下。」", scores: { gaoqian: 4 } }
+        ]
+      },
+      {
+        text: "别人的烂摊子被甩到你手上，你通常怎么接？",
+        options: [
+          { text: "不争不辩。先把能推开的部分，悄悄处理掉。", scores: { yinshen: 4 } },
+          { text: "先问截止日期和验收标准。能拖就拖，能甩就甩。", scores: { moyu: 3, gaoqian: 1 } },
+          { text: "一边吐槽一边连夜盘点，最后还是自己扛下来。", scores: { jiuhuo: 4 } },
+          { text: "先谈责任边界、资源和决策权。谈不拢，就不接。", scores: { gaoqian: 4 } }
+        ]
+      },
+      {
+        text: "同事私下形容你，最可能说出哪句？",
+        options: [
+          { text: "「他好像一直都在，但很少有人记得他发过言。」", scores: { yinshen: 4 } },
+          { text: "「他活少不少，人特别稳，从不为工作内耗。」", scores: { moyu: 4 } },
+          { text: "「公司没他转不了。就怕他哪天突然倒下。」", scores: { jiuhuo: 4 } },
+          { text: "「他永远在算值不值得。跟他合作，得先拿出条件。」", scores: { gaoqian: 4 } }
+        ]
+      }
+    ]
+  };
+
+
+  /* =========================  引擎（通常不必改）  ========================= */
+  const FONT_SERIF = '"Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif';
+  const FONT_SANS  = '"Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  const KEYS = ["A", "B", "C", "D", "E", "F"];
+
+  const state = {
+    screen: "home",
+    qIndex: 0,
+    answers: [],
+    result: null,
+    bars: [],
+    cardUrl: ""
+  };
+
+  const app = document.getElementById("app");
+  const toastEl = document.getElementById("toast");
+  let toastTimer = 0;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("is-on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 2400);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function nl2br(s) {
+    return escapeHtml(s).replace(/\n/g, "<br>");
+  }
+
+  function render() {
+    document.title = QUIZ_CONFIG.title;
+    if (state.screen === "home") renderHome();
+    else if (state.screen === "quiz") renderQuiz();
+    else if (state.screen === "generating") renderGenerating();
+    else if (state.screen === "result") renderResult();
+  }
+
+  function startQuiz() {
+    state.screen = "quiz";
+    state.qIndex = 0;
+    state.answers = [];
+    state.result = null;
+    state.bars = [];
+    state.cardUrl = "";
+    render();
+  }
+
+  function renderQuiz() {
+    const q = QUIZ_CONFIG.questions[state.qIndex];
+    const total = QUIZ_CONFIG.questions.length;
+    const n = state.qIndex + 1;
+    const pct = (state.qIndex / total) * 100;
+    app.innerHTML = `
+      <section class="view is-on" id="view-quiz">
+        <div class="quiz-bar">
+          <button type="button" class="back-btn" id="btn-back" ${state.qIndex === 0 ? "disabled" : ""} aria-label="上一题">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span>QUESTION</span>
+              <span>${String(n).padStart(2, "0")}  /  ${String(total).padStart(2, "0")}</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="q-kicker">${escapeHtml(QUIZ_CONFIG.quizKicker)}</div>
+        <h2 class="q-title">${escapeHtml(q.text)}</h2>
+        <div class="options" id="options">
+          ${q.options.map((opt, i) => `
+            <button type="button" class="option" data-index="${i}">
+              <span class="opt-key">${KEYS[i]}</span>
+              <span class="opt-text">${escapeHtml(opt.text)}</span>
+            </button>`).join("")}
+        </div>
+      </section>`;
+    requestAnimationFrame(() => {
+      const fill = app.querySelector(".progress-fill");
+      if (fill) fill.style.width = (n / total) * 100 + "%";
+    });
+    document.getElementById("btn-back").addEventListener("click", goBack);
+    app.querySelectorAll(".option").forEach((btn) => {
+      btn.addEventListener("click", () => pickOption(Number(btn.dataset.index), btn));
+    });
+  }
+
+  function goBack() {
+    if (state.qIndex === 0) return;
+    state.answers.pop();
+    state.qIndex -= 1;
+    render();
+  }
+
+  function pickOption(index, btn) {
+    if (app.dataset.locked === "1") return;
+    app.dataset.locked = "1";
+    btn.classList.add("is-picked");
+    state.answers[state.qIndex] = index;
+    const last = state.qIndex >= QUIZ_CONFIG.questions.length - 1;
+    setTimeout(() => {
+      app.dataset.locked = "0";
+      if (last) finishQuiz();
+      else {
+        state.qIndex += 1;
+        render();
+      }
+    }, 220);
+  }
+
+  function emptyScores() {
+    const t = {};
+    QUIZ_CONFIG.results.forEach((r) => { t[r.id] = 0; });
+    return t;
+  }
+
+  function totalsFromAnswers(answers) {
+    const t = emptyScores();
+    answers.forEach((optIndex, qi) => {
+      const opt = QUIZ_CONFIG.questions[qi].options[optIndex];
+      if (!opt) return;
+      Object.entries(opt.scores).forEach(([k, v]) => {
+        t[k] = (t[k] || 0) + v;
+      });
+    });
+    return t;
+  }
+
+  function hitsHidden(answers) {
+    const hidden = QUIZ_CONFIG.hidden;
+    if (!hidden || !hidden.matches || !hidden.matches.length) return false;
+    const need = hidden.minHits == null ? hidden.matches.length : hidden.minHits;
+    let hits = 0;
+    hidden.matches.forEach((m) => {
+      if (answers[m.q] === m.option) hits += 1;
+    });
+    return hits >= need;
+  }
+
+  function pickResult(totals, answers) {
+    if (hitsHidden(answers) && QUIZ_CONFIG.hidden && QUIZ_CONFIG.hidden.result) {
+      return QUIZ_CONFIG.hidden.result;
+    }
+    let best = QUIZ_CONFIG.results[0];
+    let bestScore = -1;
+    for (const r of QUIZ_CONFIG.results) {
+      const v = totals[r.id] || 0;
+      if (v > bestScore) {
+        bestScore = v;
+        best = r;
+      }
+    }
+    return best;
+  }
+
+  function toPercents(values) {
+    const sum = values.reduce((a, b) => a + b, 0);
+    if (sum <= 0) {
+      const even = Math.floor(100 / values.length);
+      const arr = values.map(() => even);
+      arr[0] += 100 - even * values.length;
+      return arr;
+    }
+    const raw = values.map((v) => (v / sum) * 100);
+    const floored = raw.map(Math.floor);
+    let remain = 100 - floored.reduce((a, b) => a + b, 0);
+    const order = raw
+      .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+      .sort((a, b) => b.frac - a.frac);
+    for (let k = 0; k < remain; k++) floored[order[k % order.length].i] += 1;
+    return floored;
+  }
+
+  function computeBreakdown(totals) {
+    const items = QUIZ_CONFIG.breakdown.items;
+    const raw = items.map((item) => {
+      let v = 0;
+      (item.from || []).forEach((k) => { v += totals[k] || 0; });
+      (item.share || []).forEach((k) => { v += (totals[k] || 0) * 0.5; });
+      return v;
+    });
+    const pcts = toPercents(raw);
+    return items.map((item, i) => ({
+      key: item.key,
+      label: item.label,
+      raw: raw[i],
+      pct: pcts[i]
+    }));
+  }
+
+  function finishQuiz() {
+    const totals = totalsFromAnswers(state.answers);
+    state.result = pickResult(totals, state.answers);
+    state.bars = computeBreakdown(totals);
+    state.screen = "generating";
+    render();
+    Promise.resolve()
+      .then(() => ensureFonts())
+      .then(() => new Promise((r) => setTimeout(r, 640)))
+      .then(() => drawResultCard(state.result, state.bars))
+      .then((url) => {
+        state.cardUrl = url;
+        state.screen = "result";
+        render();
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast("结果卡生成失败，请重试");
+        state.screen = "home";
+        render();
+      });
+  }
+
+  function renderGenerating() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-generating">
+        <div class="gen-wrap">
+          <div class="gen-mark" aria-hidden="true"></div>
+          <p class="gen-text">正在生成你的电子工牌</p>
+          <p class="gen-sub">稍等片刻</p>
+        </div>
+      </section>`;
+  }
+
+  function renderResult() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-result">
+        <div class="result-head">
+          <div class="eyebrow">你的类型已生成</div>
+          <p class="result-hint">长按工牌，即可保存到相册</p>
+        </div>
+        <img id="result-card-img" alt="${escapeHtml(state.result.name)} 结果卡" src="${state.cardUrl}" />
+        <div class="result-actions">
+          <button type="button" class="cta-save" id="btn-save">保存结果卡</button>
+          <button type="button" class="cta-ghost" id="btn-retry">重新测试</button>
+        </div>
+        <p class="result-note">也可以直接长按上图保存  ·  去评论区报出你的段位</p>
+      </section>`;
+    document.getElementById("btn-save").addEventListener("click", saveOrShareCard);
+    document.getElementById("btn-retry").addEventListener("click", startQuiz);
+  }
+
+  async function saveOrShareCard() {
+    const img = document.getElementById("result-card-img");
+    if (!img || !img.src) return;
+    const filename = `${QUIZ_CONFIG.card.filePrefix}-${state.result.name}.png`;
+    try {
+      const blob = await (await fetch(img.src)).blob();
+      const file = new File([blob], filename, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: state.result.name, text: state.result.quote });
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = img.src;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      showToast("长按上方结果卡，即可保存到相册");
+    }
+  }
+
+  async function ensureFonts() {
+    if (!document.fonts) return;
+    try { await document.fonts.ready; } catch (e) {}
+    const faces = [
+      `700 112px ${FONT_SERIF}`,
+      `400 42px ${FONT_SERIF}`,
+      `700 42px ${FONT_SERIF}`,
+      `400 28px ${FONT_SANS}`,
+      `500 28px ${FONT_SANS}`,
+      `700 30px ${FONT_SANS}`
+    ];
+    await Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null)));
+  }
+
+  function wrapText(ctx, text, maxWidth) {
+    const noStart = "。，、；：！？）》」』…";
+    const preferred = "。！？；，、 ";
+    const out = [];
+
+    function fixOrphans(block) {
+      if (block.length < 2) return block;
+      const minLast = 5;
+      const last = [...block[block.length - 1]];
+      if (last.length >= minLast) return block;
+      const prev = [...block[block.length - 2]];
+      while (last.length < minLast && prev.length > minLast + 1) {
+        last.unshift(prev.pop());
+      }
+      block[block.length - 2] = prev.join("");
+      block[block.length - 1] = last.join("");
+      return block;
+    }
+
+    for (const paragraph of String(text || "").split("\n")) {
+      const chars = [...paragraph];
+      if (!chars.length) { out.push(""); continue; }
+      const para = [];
+      let line = "";
+      let breakAt = -1;
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        const test = line + ch;
+        const overflow = !!(line && ctx.measureText(test).width > maxWidth && !noStart.includes(ch));
+        if (overflow) {
+          const arr = [...line];
+          if (breakAt >= 4 && breakAt < arr.length) {
+            para.push(arr.slice(0, breakAt).join(""));
+            line = arr.slice(breakAt).join("");
+            breakAt = -1;
+            i -= 1;
+            continue;
+          }
+          para.push(line);
+          line = "";
+          breakAt = -1;
+          i -= 1;
+          continue;
+        }
+        line = test;
+        if (preferred.includes(ch)) breakAt = [...line].length;
+      }
+      if (line) para.push(line);
+      out.push.apply(out, fixOrphans(para));
+    }
+    return out;
+  }
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+
+
+  function renderHome() {
+    const chips = QUIZ_CONFIG.subtitle.split("/").map((t) => t.trim()).filter(Boolean);
+    app.innerHTML = `
+      <section class="view is-on" id="view-home">
+        <div class="lanyard" aria-hidden="true">
+          <div class="lanyard-strap"></div>
+          <div class="lanyard-hole"></div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-topbar">
+            <span class="clock">PUNCH  ·  08:59</span>
+            <span>ID  ·  WK-05</span>
+          </div>
+          <div class="home-eyebrow-wrap">
+            <div class="eyebrow">${escapeHtml(QUIZ_CONFIG.kicker)}</div>
+          </div>
+          <div class="ornament" aria-hidden="true"></div>
+          <h1 class="home-title">${formatTitle(QUIZ_CONFIG.title)}</h1>
+          <div class="chips">
+            ${chips.map((c) => `<span class="chip">${escapeHtml(c)}</span>`).join("")}
+          </div>
+          <p class="home-lead">${nl2br(QUIZ_CONFIG.lead)}</p>
+          <button type="button" class="cta-primary" id="btn-start">${escapeHtml(QUIZ_CONFIG.startLabel)}</button>
+          <p class="home-meta">${nl2br(QUIZ_CONFIG.homeMeta)}</p>
+          <div class="barcode" aria-hidden="true"></div>
+          <p class="home-footer">${escapeHtml(QUIZ_CONFIG.homeFoot)}</p>
+        </div>
+      </section>`;
+    document.getElementById("btn-start").addEventListener("click", startQuiz);
+  }
+
+  function formatTitle(title) {
+    if (title === "测你是哪种打工人？") {
+      return "测你是哪种<br><em>打工人？</em>";
+    }
+    const t = escapeHtml(title);
+    if (t.length > 8) {
+      const cut = Math.ceil(t.length / 2);
+      return t.slice(0, cut) + "<br>" + t.slice(cut);
+    }
+    return t;
+  }
+
+  function getCardPalette(result) {
+    const theme = (result && result.theme) || {};
+    const dark = theme.id === "black-gold" || theme.mode === "dark";
+    if (dark) {
+      const gold = theme.gold || "#D8B26E";
+      const ivory = theme.ivory || "#F5EFE6";
+      const bg = theme.bg || "#13151A";
+      return {
+        mode: "vip",
+        bg: bg,
+        wash: "rgba(216,178,110,0.10)",
+        ink: ivory,
+        accent: gold,
+        track: "rgba(216,178,110,0.18)",
+        faint: "rgba(245,239,230,0.48)",
+        hook: "rgba(245,239,230,0.78)",
+        summary: "rgba(245,239,230,0.70)",
+        frame: "rgba(216,178,110,0.70)",
+        frameInner: "rgba(216,178,110,0.32)",
+        divider: "rgba(216,178,110,0.30)",
+        tagStroke: "rgba(216,178,110,0.70)",
+        badgeBg: gold,
+        badgeText: bg,
+        grainA: "#000000",
+        grainB: "#D8B26E",
+        grainAlpha: 0.055,
+        grid: "rgba(216,178,110,0.07)",
+        holeFill: bg,
+        espresso: gold
+      };
+    }
+    return {
+      mode: "office",
+      bg: "#F2F4F7",
+      wash: "rgba(255,224,102,0.16)",
+      ink: "#1E293B",
+      accent: "#1E293B",
+      track: "#E2E8F0",
+      faint: "rgba(30,41,59,0.48)",
+      hook: "rgba(30,41,59,0.74)",
+      summary: "rgba(30,41,59,0.62)",
+      frame: "rgba(30,41,59,0.28)",
+      frameInner: "rgba(30,41,59,0.12)",
+      divider: "rgba(30,41,59,0.16)",
+      tagStroke: "rgba(30,41,59,0.28)",
+      badgeBg: "#FFE066",
+      badgeText: "#1E293B",
+      grainA: "#1E293B",
+      grainB: "#FFFFFF",
+      grainAlpha: 0.04,
+      grid: "rgba(30,41,59,0.07)",
+      holeFill: "#F2F4F7",
+      espresso: "#7C4F2B"
+    };
+  }
+
+  function drawBarcode(ctx, x, y, w, h, seed, color) {
+    let s = 2166136261;
+    const str = String(seed || "WK-05");
+    for (let i = 0; i < str.length; i++) {
+      s ^= str.charCodeAt(i);
+      s = Math.imul(s, 16777619);
+    }
+    let px = x;
+    ctx.fillStyle = color;
+    while (px < x + w) {
+      s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+      const bw = 1 + (s % 4);
+      if (s & 1) {
+        ctx.fillRect(px, y, bw, h);
+      }
+      px += bw + (s % 2);
+    }
+  }
+
+  function drawLanyardHole(ctx, cx, cy, pal) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+    ctx.fillStyle = pal.mode === "vip" ? pal.accent : pal.ink;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+    ctx.fillStyle = pal.holeFill;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+    ctx.fillStyle = pal.mode === "vip" ? pal.bg : "#E8EDF3";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+    ctx.strokeStyle = pal.mode === "vip" ? pal.accent : pal.ink;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPunchStamp(ctx, sx, sy, pal, ch) {
+    ctx.save();
+    ctx.strokeStyle = pal.mode === "vip" ? pal.accent : pal.espresso;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 54, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = 1.25;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 44, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 * i) / 12 - Math.PI / 2;
+      const r1 = i % 3 === 0 ? 36 : 38;
+      const r2 = 42;
+      ctx.beginPath();
+      ctx.moveTo(sx + Math.cos(a) * r1, sy + Math.sin(a) * r1);
+      ctx.lineTo(sx + Math.cos(a) * r2, sy + Math.sin(a) * r2);
+      ctx.lineWidth = i % 3 === 0 ? 2.5 : 1.25;
+      ctx.stroke();
+    }
+    ctx.fillStyle = pal.mode === "vip" ? pal.accent : pal.espresso;
+    ctx.font = `700 40px ${FONT_SERIF}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(ch, sx, sy + 2);
+    ctx.restore();
+  }
+
+  function drawResultCard(result, bars) {
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const MX = 128;
+    const contentW = W - MX * 2;
+    const pal = getCardPalette(result);
+    const ink = pal.ink;
+    const rose = pal.mode === "vip" ? pal.accent : pal.espresso;
+    const sand = pal.track;
+    const cream = pal.bg;
+    const faint = pal.faint;
+    const isVip = pal.mode === "vip";
+
+    // background
+    ctx.fillStyle = cream;
+    ctx.fillRect(0, 0, W, H);
+    const wash = ctx.createLinearGradient(0, 0, 0, 640);
+    wash.addColorStop(0, pal.wash);
+    wash.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, W, 640);
+
+    // office dot-grid (skip a disc around the lanyard hole)
+    ctx.save();
+    ctx.fillStyle = pal.grid;
+    for (let gy = 72; gy < H - 72; gy += 22) {
+      for (let gx = 72; gx < W - 72; gx += 22) {
+        const dx = gx - W / 2;
+        const dy = gy - 108;
+        if (dx * dx + dy * dy < 40 * 40) continue;
+        ctx.fillRect(gx, gy, 1.6, 1.6);
+      }
+    }
+    ctx.restore();
+
+    // subtle grain
+    ctx.save();
+    ctx.globalAlpha = pal.grainAlpha;
+    for (let i = 0; i < 14000; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? pal.grainA : pal.grainB;
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1.2, 1.2);
+    }
+    ctx.restore();
+
+    // faint coffee ring (normal cards only)
+    if (!isVip) {
+      ctx.save();
+      ctx.translate(940, 520);
+      ctx.rotate(-0.22);
+      ctx.strokeStyle = "rgba(124,79,43,0.10)";
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 86, 80, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "rgba(124,79,43,0.07)";
+      ctx.beginPath();
+      ctx.ellipse(8, -4, 70, 64, 0, 0.4, 5.2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // double frame — slightly tighter at the top to leave room for the lanyard hole
+    ctx.strokeStyle = pal.frame;
+    ctx.lineWidth = isVip ? 2.5 : 2;
+    ctx.strokeRect(48, 48, W - 96, H - 96);
+    ctx.strokeStyle = pal.frameInner;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(64, 64, W - 128, H - 128);
+
+    // lanyard hole sitting on the top edge, like a physical badge
+    drawLanyardHole(ctx, W / 2, 108, pal);
+
+    // punch-clock stamp
+    const stamp = result.stamp || QUIZ_CONFIG.card.stamp || "工";
+    drawPunchStamp(ctx, W - 176, 214, pal, stamp);
+
+    let y = 176;
+
+    // eyebrow
+    ctx.fillStyle = faint;
+    ctx.font = `400 22px ${FONT_SANS}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    try { ctx.letterSpacing = "0.22em"; } catch (e) {}
+    ctx.fillText(result.eyebrow || QUIZ_CONFIG.card.eyebrow, MX, y);
+    ctx.letterSpacing = "0px";
+
+    // badge
+    y = 210;
+    const badge = result.badge || QUIZ_CONFIG.card.badge;
+    ctx.font = `600 22px ${FONT_SANS}`;
+    const badgeW = Math.min(contentW - 160, ctx.measureText(badge).width + 48);
+    const badgeH = 44;
+    const badgeX = MX;
+    roundedRect(ctx, badgeX, y, badgeW, badgeH, 6);
+    ctx.fillStyle = pal.badgeBg;
+    ctx.fill();
+    ctx.fillStyle = pal.badgeText;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, badgeX + 24, y + badgeH / 2 + 1);
+
+    // ID + punch timestamp
+    y = 292;
+    ctx.fillStyle = faint;
+    ctx.font = `500 20px ${FONT_SANS}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    const idCode = "ID  ·  WK-05-" + String(result.id || "XXXX").replace(/hidden-/, "").slice(0, 6).toUpperCase();
+    ctx.fillText(idCode, MX, y);
+    ctx.textAlign = "right";
+    ctx.fillText(isVip ? "ACCESS  ·  GRANTED" : "PUNCHED  ·  FRI  17:58", W - MX, y);
+    ctx.textAlign = "left";
+
+    // title
+    y = 430;
+    ctx.fillStyle = ink;
+    ctx.font = `700 108px ${FONT_SERIF}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    const titleLines = wrapText(ctx, result.name, contentW);
+    const titleSize = titleLines.length > 1 ? 84 : 100;
+    ctx.font = `700 ${titleSize}px ${FONT_SERIF}`;
+    const titleLines2 = wrapText(ctx, result.name, contentW);
+    const titleLh = titleSize + 16;
+    // highlighter underline under the type name on normal cards
+    if (!isVip) {
+      const last = titleLines2[titleLines2.length - 1];
+      const tw = ctx.measureText(last).width;
+      ctx.fillStyle = "#FFE066";
+      ctx.fillRect(MX - 6, y + (titleLines2.length - 1) * titleLh + 8, tw + 12, 18);
+      ctx.fillStyle = ink;
+    }
+    titleLines2.forEach((line, i) => {
+      ctx.fillText(line, MX, y + i * titleLh);
+    });
+    y += titleLines2.length * titleLh + 32;
+
+    // hook
+    ctx.fillStyle = pal.hook;
+    ctx.font = `400 30px ${FONT_SANS}`;
+    const hookLines = wrapText(ctx, result.hook, contentW);
+    hookLines.forEach((line) => {
+      ctx.fillText(line, MX, y);
+      y += 48;
+    });
+    y += 28;
+
+    // tags
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.textBaseline = "middle";
+    let tagX = MX;
+    const tagY = y;
+    const tagH = 52;
+    (result.tags || []).slice(0, 3).forEach((tag, ti) => {
+      const tw = ctx.measureText(tag).width + 40;
+      roundedRect(ctx, tagX, tagY, tw, tagH, 6);
+      if (!isVip && ti === 0) {
+        ctx.fillStyle = "#FFE066";
+        ctx.fill();
+        ctx.fillStyle = ink;
+      } else {
+        ctx.strokeStyle = pal.tagStroke;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = ink;
+      }
+      ctx.textAlign = "center";
+      ctx.fillText(tag, tagX + tw / 2, tagY + tagH / 2 + 1);
+      tagX += tw + 16;
+      ctx.textAlign = "left";
+    });
+    y = tagY + tagH + 70;
+
+    // quote
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("「", MX - 8, y);
+    y += 18;
+    ctx.fillStyle = ink;
+    ctx.font = `400 40px ${FONT_SERIF}`;
+    const quote = String(result.quote || "").replace(/^[「『]/, "").replace(/[」』]$/, "");
+    const quoteLines = wrapText(ctx, quote, contentW - 20);
+    quoteLines.forEach((line) => {
+      ctx.fillText(line, MX + 8, y);
+      y += 66;
+    });
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textAlign = "right";
+    ctx.fillText("」", W - MX + 8, y + 8);
+    ctx.textAlign = "left";
+    y += 56;
+
+    // divider
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, y);
+    ctx.lineTo(W - MX, y);
+    ctx.stroke();
+    y += 70;
+
+    // breakdown title
+    ctx.fillStyle = faint;
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.fillText(QUIZ_CONFIG.card.breakdownTitle, MX, y);
+    y += 54;
+
+    // bars — reserve footer + barcode space
+    const footerTop = 1688;
+    const barCount = Math.max(bars.length, 1);
+    const barBlock = Math.min(140, Math.max(110, (footerTop - 40 - y) / barCount));
+    bars.forEach((bar, bi) => {
+      ctx.fillStyle = ink;
+      ctx.font = `500 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(bar.label, MX, y);
+      ctx.textAlign = "right";
+      ctx.fillText(bar.pct + "%", W - MX, y);
+      ctx.textAlign = "left";
+
+      const trackY = y + 24;
+      const trackH = 16;
+      roundedRect(ctx, MX, trackY, contentW, trackH, 3);
+      ctx.fillStyle = sand;
+      ctx.fill();
+      const fillW = Math.max(bar.pct > 0 ? 16 : 0, Math.round(contentW * (bar.pct / 100)));
+      if (fillW > 0) {
+        roundedRect(ctx, MX, trackY, fillW, trackH, 3);
+        // 班味浓度 uses espresso; others use navy / gold
+        ctx.fillStyle = (!isVip && bi === 0) ? "#7C4F2B" : (isVip ? pal.accent : pal.ink);
+        ctx.fill();
+      }
+      y += barBlock;
+    });
+
+    // summary, if it still fits above the barcode
+    const fy = 1764;
+    const barcodeY = 1696;
+    if (result.summary) {
+      ctx.fillStyle = pal.summary;
+      ctx.font = `400 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      const sumLines = wrapText(ctx, result.summary, contentW);
+      const sumLh = 48;
+      const sumBlock = sumLines.length * sumLh;
+      let sy = y + 12;
+      if (sy + sumBlock > barcodeY - 24) {
+        sy = Math.max(y, barcodeY - 24 - sumBlock);
+      }
+      if (sy + sumBlock <= barcodeY - 16) {
+        sumLines.forEach((line, i) => {
+          ctx.fillText(line, MX, sy + i * sumLh);
+        });
+      }
+    }
+
+    // barcode above pinned footer
+    drawBarcode(ctx, MX, barcodeY, contentW, 36, (result.id || "") + (result.name || ""), isVip ? pal.accent : pal.ink);
+
+    // footer pinned
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, fy);
+    ctx.lineTo(W - MX, fy);
+    ctx.stroke();
+
+    ctx.fillStyle = ink;
+    ctx.font = `400 24px ${FONT_SANS}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(result.footer || QUIZ_CONFIG.card.footer, W / 2, fy + 50);
+    ctx.fillStyle = faint;
+    ctx.font = `400 20px ${FONT_SANS}`;
+    ctx.fillText(result.disclaimer || QUIZ_CONFIG.card.disclaimer, W / 2, fy + 90);
+
+    const url = canvas.toDataURL("image/png");
+    return url;
+  }
+
+
+  render();
+  </script>
+</body>
+</html>

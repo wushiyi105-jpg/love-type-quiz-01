@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#F7F8FA" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="放弃 3 个，猜你的 MBTI。8 道舍弃题，先划掉你最不舍得的那项，生成可保存的四色象限结果卡。" />
+  <title>放弃 3 个，猜你的 MBTI</title>
+  <style>
+
+    :root {
+      --paper: #F7F8FA;
+      --cream: #F7F8FA;
+      --ink: #14151A;
+      --ink-soft: #5C6170;
+      --ink-faint: #8B90A0;
+      --strike: #E11D48;
+      --strike-soft: #FFF1F3;
+      --rose: #E11D48;
+      --rose-deep: #BE123C;
+      --rose-soft: rgba(225, 29, 72, 0.12);
+      --nt: #7C4DFF;
+      --nf: #10B981;
+      --sj: #2563EB;
+      --sp: #F59E0B;
+      --sand: #ECEEF3;
+      --sand-dark: #E2E5EC;
+      --card: #FFFFFF;
+      --line: #14151A;
+      --line-soft: rgba(20, 21, 26, 0.14);
+      --shadow: 3px 3px 0 rgba(20, 21, 26, 0.10);
+      --font-serif: "Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      --font-sans: "Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
+    }
+    button {
+      font-family: inherit;
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    img { display: block; max-width: 100%; }
+
+    #app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(124, 77, 255, 0.06), transparent 28%),
+        linear-gradient(120deg, rgba(16, 185, 129, 0.04), transparent 30%),
+        linear-gradient(300deg, rgba(245, 158, 11, 0.05), transparent 32%),
+        var(--paper);
+    }
+
+    .view {
+      display: none;
+      min-height: 100dvh;
+      padding: calc(24px + var(--safe-top)) 22px calc(28px + var(--safe-bottom));
+      animation: rise 0.48s ease both;
+    }
+    .view.is-on { display: flex; flex-direction: column; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Home ===== */
+    .home-top { padding-top: 10px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--ink-faint);
+      text-transform: none;
+    }
+    .eyebrow::before,
+    .eyebrow::after {
+      content: "";
+      flex: 0 0 18px;
+      height: 2px;
+      background: var(--ink);
+      opacity: 0.18;
+    }
+    .eyebrow::before { flex: 0 0 22px; }
+    .home-eyebrow-wrap { display: flex; justify-content: center; margin-bottom: 22px; }
+
+    .home-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: clamp(32px, 9.2vw, 40px);
+      line-height: 1.22;
+      letter-spacing: 0.04em;
+      text-align: center;
+      font-feature-settings: "kern";
+    }
+    .home-title em { font-style: normal; }
+    .home-title .mbti {
+      font-style: normal;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .home-title .mbti i { font-style: normal; }
+    .c-nt { color: var(--nt); }
+    .c-nf { color: var(--nf); }
+    .c-sj { color: var(--sj); }
+    .c-sp { color: var(--sp); }
+
+    .chips {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 18px 0 14px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 5px 11px;
+      box-shadow: 2px 2px 0 rgba(20, 21, 26, 0.08);
+    }
+    .chip.chip-nt { border-color: var(--nt); color: var(--nt); background: rgba(124, 77, 255, 0.08); }
+    .chip.chip-nf { border-color: var(--nf); color: #059669; background: rgba(16, 185, 129, 0.10); }
+    .chip.chip-sj { border-color: var(--sj); color: var(--sj); background: rgba(37, 99, 235, 0.08); }
+    .chip.chip-sp { border-color: var(--sp); color: #B45309; background: rgba(245, 158, 11, 0.14); }
+
+    .strike-board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .strike-chip {
+      position: relative;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 6px 12px;
+      line-height: 1.2;
+    }
+    .strike-chip.is-off {
+      color: #8B90A0;
+      border-color: var(--strike);
+      background: var(--strike-soft);
+      text-decoration: line-through;
+      text-decoration-color: var(--strike);
+      text-decoration-thickness: 2px;
+      text-decoration-skip-ink: none;
+    }
+    .strike-chip.is-off::after {
+      content: "";
+      position: absolute;
+      inset: -7px -8px;
+      border: 2px solid var(--strike);
+      border-radius: 50%;
+      transform: rotate(-8deg);
+      pointer-events: none;
+      opacity: 0.92;
+    }
+
+    .home-lead {
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--ink-soft);
+      max-width: 20.5em;
+      margin: 0 auto 32px;
+    }
+
+    .cta-primary {
+      display: block;
+      width: 100%;
+      background: var(--ink);
+      color: var(--paper);
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      height: 52px;
+      font-size: 16px;
+      letter-spacing: 0.16em;
+      box-shadow: 4px 4px 0 var(--ink);
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .cta-primary:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .home-meta {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--ink-faint);
+      line-height: 1.7;
+      letter-spacing: 0.04em;
+    }
+
+    .home-footer {
+      margin-top: auto;
+      padding-top: 36px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.08em;
+    }
+
+    .ornament {
+      width: 18px;
+      height: 18px;
+      margin: 0 auto 22px;
+      border: 2px solid var(--strike);
+      border-radius: 50%;
+      position: relative;
+      opacity: 1;
+    }
+    .ornament::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 20px;
+      height: 2px;
+      background: var(--strike);
+      transform: translate(-50%, -50%) rotate(-28deg);
+    }
+
+    /* ===== Quiz ===== */
+    .quiz-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 2px solid var(--ink);
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background: #fff;
+      flex: 0 0 36px;
+      box-shadow: 2px 2px 0 rgba(20, 21, 26, 0.10);
+      transition: transform 0.12s ease;
+    }
+    .back-btn:disabled { opacity: 0.3; box-shadow: none; }
+    .back-btn:not(:disabled):active { transform: translate(1px, 1px); }
+    .progress-wrap { flex: 1; }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+    .progress-track {
+      height: 6px;
+      background: var(--sand-dark);
+      border: 2px solid var(--ink);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--nt), var(--nf), var(--sj), var(--sp));
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    .q-kicker {
+      margin-top: 14px;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--strike);
+      font-weight: 700;
+    }
+    .q-title {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 21px;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      margin: 8px 0 20px;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      text-align: left;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 12px 12px 12px 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: 3px 3px 0 rgba(20, 21, 26, 0.10);
+      transition: border-color 0.16s ease, transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+    }
+    .option:active { transform: translate(1px, 1px); }
+    .option.is-picked {
+      border-color: var(--strike);
+      background: var(--strike-soft);
+      box-shadow: 3px 3px 0 rgba(225, 29, 72, 0.28);
+    }
+    .opt-key {
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      letter-spacing: 0;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid var(--ink);
+      margin-top: 1px;
+      position: relative;
+    }
+    .option.is-picked .opt-key {
+      background: var(--strike);
+      border-color: var(--strike);
+      color: transparent;
+    }
+    .option.is-picked .opt-key::after {
+      content: "✕";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .opt-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink);
+      padding-top: 1px;
+    }
+    .option.is-picked .opt-text {
+      color: #6B717C;
+      text-decoration: line-through;
+      text-decoration-color: var(--strike);
+      text-decoration-thickness: 2.5px;
+      text-decoration-skip-ink: none;
+    }
+
+    /* ===== Generating / Result ===== */
+    .gen-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .gen-mark {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--strike);
+      border-radius: 50%;
+      position: relative;
+      animation: pulse 1.1s ease-in-out infinite;
+    }
+    .gen-mark::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 20px;
+      height: 2px;
+      background: var(--strike);
+      transform: translate(-50%, -50%) rotate(-28deg);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+    .gen-text {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      letter-spacing: 0.12em;
+    }
+    .gen-sub { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.08em; }
+
+    .result-head {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .result-head .eyebrow { justify-content: center; margin-bottom: 8px; }
+    .result-hint {
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+    }
+
+    #result-card-img {
+      width: min(100%, calc((100dvh - 220px) * 1080 / 1920));
+      height: auto;
+      margin: 0 auto;
+      border-radius: 10px;
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 rgba(20, 21, 26, 0.12);
+      background: var(--sand);
+      user-select: none;
+      -webkit-touch-callout: default;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .cta-save {
+      height: 48px;
+      border-radius: 12px;
+      background: var(--strike);
+      color: #fff;
+      border: 2px solid var(--ink);
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      box-shadow: 3px 3px 0 var(--ink);
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .cta-save:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .cta-ghost {
+      height: 48px;
+      border-radius: 12px;
+      border: 2px solid var(--ink);
+      background: #fff;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: var(--ink);
+      box-shadow: 3px 3px 0 rgba(20, 21, 26, 0.10);
+    }
+    .cta-ghost:active { transform: translate(1px, 1px); }
+
+    .result-note {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-faint);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(12px);
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 13px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--ink);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 20;
+      white-space: nowrap;
+    }
+    .toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .view, .gen-mark, .progress-fill, .cta-primary, .option { animation: none; transition: none; }
+    }
+    </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+
+  /* =============================================================================
+   * QUIZ_CONFIG — 选题 3《放弃 3 个，猜你的 MBTI》
+   * -----------------------------------------------------------------------------
+   * 使用步骤：
+   *   1. 改 meta：id / title / subtitle / lead / startLabel / homeFoot
+   *   2. 改 questions：8 题为宜，每题 3–4 个 options，禁止开放式填空
+   *      每个 option.scores 的 key 必须与 results[].id 一致，分值为 0–4 的整数
+   *   3. 改 results：建议 4 档（不要 8 档）。每档需要：
+   *        id, name, hook, tags[3], quote, summary
+   *        本选题每档另带 theme.accent，结果卡会按 NT/NF/SJ/SP 四色换肤
+   *   4. 改 breakdown：结果卡上的 3 根百分比条
+   *        items[].from  = 直接累加的结果 id
+   *        items[].share = 按 50% 均摊进来的结果 id
+   *        items[].color = 条的填充色
+   *   5. 改 card：结果卡眉题、印章字、页脚、文件名前缀
+   *   6. （可选）改 hidden：稀有隐藏档。命中 hidden.matches 中不少于
+   *        hidden.minHits 条时，优先出隐藏款，不再走普通 4 档计分。
+   *        隐藏结果可自带 theme / badge / eyebrow / stamp / footer。
+   *   7. 另存为新的 index.html，上传即可发布
+   *
+   * 计分规则：
+   *   先判定隐藏款触发；未触发时，累加 8 题选项的 scores，总分最高的结果档胜出；
+   *   平分时取配置里更靠前的那一档。隐藏档不要写入 option.scores，以免污染普通档。
+   *   倾向百分比 = from 得分 + share 得分 × 0.5，再归一化为 100%。
+   *
+   * 本选题隐藏款触发（写死在 hidden.matches，供自己测 / 截图，不要发到评论区）：
+   *   8 题中标定 4 个「反常规 / 悖论式」选项，至少命中 3 个即出「野生第五象限」。
+   *   路径占比：C(4,3)×3×4^4 + 4^4 = 3328 / 65536 ≈ 5.08%。
+   *     第 1 题 A  「计划好的时间和即兴空窗都让路，去一个谁也不约的地方。」
+   *     第 3 题 C  「流程和灵感都先让路，只把最难看的那件事做完。」
+   *     第 6 题 B  「行程不必钉死，也不要完全没谱，留随时能改的走法。」
+   *     第 7 题 D  「不找人说，也不拆题，先把情绪放到谁也进不来的地方。」
+   *   自测推荐完整路径（8 题选项）：A / D / C / B / C / B / D / A
+   *   （第 2、4、5、8 题可任选；只要上面 4 条里至少中 3 条，就会出黑金隐藏卡。）
+   * ============================================================================= */
+  const QUIZ_CONFIG = {
+    id: "give-up-three-mbti-03",
+    title: "放弃 3 个，猜你的 MBTI",
+    subtitle: "紫老头 / 绿老头 / 蓝老头 / 黄老头",
+    chipThemes: ["nt", "nf", "sj", "sp"],
+    kicker: "舍弃型人格测试  ·  03",
+    lead: "不是在测你选什么。\n是在测，你先忍痛划掉什么。",
+    startLabel: "开始划掉",
+    homeMeta: "8 道舍弃题  ·  约 2 分钟\n结束后生成可保存的四色结果卡",
+    homeFoot: "娱乐测试  ·  结果可长按保存分享",
+    quizKicker: "如果必须放弃一个",
+    strikeChips: [
+      { text: "周末独处", dropped: true },
+      { text: "吐槽的朋友", dropped: false },
+      { text: "提前做计划", dropped: true },
+      { text: "说走就走", dropped: false },
+      { text: "把事情想透", dropped: false },
+      { text: "准时赴约", dropped: true }
+    ],
+
+    card: {
+      eyebrow: "测试结果",
+      badge: "放弃 3 个 · 猜 MBTI",
+      stamp: "弃",
+      breakdownTitle: "性格倾向",
+      footer: "长按保存结果卡 · 评论区报出你的老头类型",
+      disclaimer: "娱乐测试 · 不是专业人格鉴定",
+      filePrefix: "我的MBTI象限"
+    },
+
+    breakdown: {
+      items: [
+        { key: "reason",  label: "理智度", from: ["nt"], share: ["sj"], color: "#7C4DFF" },
+        { key: "freedom", label: "自由度", from: ["sp"], share: ["nf"], color: "#F59E0B" },
+        { key: "bound",   label: "边界感", from: ["sj"], share: ["nt"], color: "#2563EB" }
+      ]
+    },
+
+    results: [
+      {
+        id: "nt",
+        name: "紫老头理智派",
+        hook: "先把事情想清楚，再决定要不要动情。你放弃的是内耗，留下的是结构和判断。",
+        tags: ["先把逻辑摊开", "框架控", "不内耗"],
+        quote: "不是我冷。是没用的部分，我先划掉了。",
+        summary: "你习惯先把问题拆开。别人还在纠结的时候，你已经在找结构。这种冷静，就是紫老头的招牌。",
+        badge: "NT · 架构师挂",
+        stamp: "理",
+        mark: "NT",
+        theme: { id: "nt-purple", accent: "#7C4DFF", wash: "rgba(124,77,255,0.14)", badgeText: "#FFFFFF" }
+      },
+      {
+        id: "nf",
+        name: "绿老头共情派",
+        hook: "先放弃敷衍和场面话。留下被理解，和那些真正对上频的人。",
+        tags: ["要被认真看见", "价值感", "真情实感"],
+        quote: "可以忙，可以累。但不可以，对我敷衍了事。",
+        summary: "你划掉的往往是空洞的热闹。你要的是被理解，是意义，是那种对上了就很安静的靠近。",
+        badge: "NF · 理想家挂",
+        stamp: "情",
+        mark: "NF",
+        theme: { id: "nf-green", accent: "#10B981", wash: "rgba(16,185,129,0.14)", badgeText: "#FFFFFF" }
+      },
+      {
+        id: "sj",
+        name: "蓝老头秩序派",
+        hook: "先放弃突然变卦和不确定。留下计划、承诺，和靠得住的日常。",
+        tags: ["提前安排", "说到做到", "安定感"],
+        quote: "不是我古板。是靠谱这件事，我不想先放弃。",
+        summary: "你不怕麻烦，怕的是突变和食言。把能确定的先确定，你会安心很多。这种稳，就是蓝老头的底色。",
+        badge: "SJ · 守护者挂",
+        stamp: "序",
+        mark: "SJ",
+        theme: { id: "sj-blue", accent: "#2563EB", wash: "rgba(37,99,235,0.14)", badgeText: "#FFFFFF" }
+      },
+      {
+        id: "sp",
+        name: "黄老头自由派",
+        hook: "先放弃被日程绑死的感觉。留下当下的松弛，和说走就走的权利。",
+        tags: ["说走就走", "活在当下", "松弛感"],
+        quote: "计划可以有。但别把今天，先过成明天的附录。",
+        summary: "你划掉的是那些把人钉死的安排。你要手感、要现场、要一点恰到好处的即兴。黄老头的快乐，通常很具体。",
+        badge: "SP · 探险家挂",
+        stamp: "自",
+        mark: "SP",
+        theme: { id: "sp-amber", accent: "#F59E0B", wash: "rgba(245,158,11,0.16)", badgeText: "#14151A" }
+      }
+    ],
+
+    /* -----------------------------------------------------------------
+     * hidden — 稀有隐藏档「野生第五象限（反常规全能体）」
+     * 触发逻辑（确定性，与普通 4 档计分互不干扰）：
+     *   下列 4 个选项代表同一类「反常规、不按象限出牌」的选择。
+     *   answers[q] === option 计 1 次命中；命中数 >= minHits（3）则出隐藏款。
+     *   q / option 均从 0 起算：q=0 是第 1 题，option=0 是 A，option=3 是 D。
+     *
+     * 精确组合：
+     *   第 1 题 A（q:0, option:0）
+     *   第 3 题 C（q:2, option:2）
+     *   第 6 题 B（q:5, option:1）
+     *   第 7 题 D（q:6, option:3）
+     *   4 条里至少中 3 条。约 5.08% 路径（3328 / 65536）。
+     *
+     * 自测推荐完整 8 题路径（0-index）：[0, 3, 2, 1, 2, 1, 3, 0]
+     *   即 A / D / C / B / C / B / D / A
+     * ----------------------------------------------------------------- */
+    hidden: {
+      minHits: 3,
+      matches: [
+        { q: 0, option: 0 },
+        { q: 2, option: 2 },
+        { q: 5, option: 1 },
+        { q: 6, option: 3 }
+      ],
+      result: {
+        id: "hidden-fifth",
+        name: "野生第五象限",
+        hook: "四个象限都沾一点，却哪一格都关不住你。你先放弃的，是被定义。",
+        tags: ["不按常理", "反常规", "难被分类"],
+        quote: "不是我没有类型。是我拒绝，只做一种人。",
+        summary: "你总在不该放弃的地方留下退路，又在最典型的选项上轻轻划掉。谁都觉得你像某一种，却又不完全是。",
+        eyebrow: "隐藏款 · 野生第五象限",
+        badge: "★ 稀有隐藏款",
+        stamp: "隐",
+        mark: "Ⅴ",
+        footer: "长按保存结果卡 · 评论区晒出你的隐藏款",
+        theme: {
+          id: "black-gold",
+          bg: "#121318",
+          gold: "#E5C168",
+          ivory: "#F4F1EA"
+        }
+      }
+    },
+
+    questions: [
+      {
+        text: "周末里如果必须放弃一个，你先划掉哪项？",
+        options: [
+          { text: "计划好的时间和即兴空窗都让路，去一个谁也不约的地方。", scores: { nt: 1, nf: 1, sj: 1, sp: 1 } },
+          { text: "和最熟的人毫无保留地聊上一下午。", scores: { nf: 4 } },
+          { text: "把下周安排提前排好的安心感。", scores: { sj: 4 } },
+          { text: "说走就走、完全不计划的半日空窗。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "跟朋友相处，如果必须砍掉一项，你先划掉？",
+        options: [
+          { text: "互相较真、把观点辩到清楚。", scores: { nt: 4 } },
+          { text: "随时能吐槽、被接住的安全感。", scores: { nf: 4 } },
+          { text: "稳定的固定局和靠谱的回复。", scores: { sj: 4 } },
+          { text: "不提前约、说去就去的那种松。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "工作里如果只能留三样，你先放弃哪项？",
+        options: [
+          { text: "自己把框架想清楚再动手的权利。", scores: { nt: 4 } },
+          { text: "能被认真对待的团队氛围。", scores: { nf: 4 } },
+          { text: "流程和灵感都先让路，只把最难看的那件事做完。", scores: { nt: 1, nf: 1, sj: 1, sp: 1 } },
+          { text: "节奏自由、能见机行事的空间。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "一段关系里如果必须放弃一个，你先划掉？",
+        options: [
+          { text: "观点对得上、能一起把事想透。", scores: { nt: 4 } },
+          { text: "情绪被接住、被认真看见。", scores: { nf: 4 } },
+          { text: "承诺稳、路径说得清的确定感。", scores: { sj: 4 } },
+          { text: "新鲜感和说走就走的默契。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "生活习惯里如果必须放弃一个，你先划掉？",
+        options: [
+          { text: "把每件事优化到自己满意。", scores: { nt: 4 } },
+          { text: "对在乎的人保持百分百真诚。", scores: { nf: 4 } },
+          { text: "提前做计划、按清单推进。", scores: { sj: 4 } },
+          { text: "跟着感觉走、不被日程绑住。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "出门旅行如果必须砍掉一项，你先划掉？",
+        options: [
+          { text: "把当地门道研究透的乐趣。", scores: { nt: 4 } },
+          { text: "行程不必钉死，也不要完全没谱，留随时能改的走法。", scores: { nt: 1, nf: 1, sj: 1, sp: 1 } },
+          { text: "按时出发、住宿提前订好的踏实。", scores: { sj: 4 } },
+          { text: "落地再决定、跟着感觉走的自由。", scores: { sp: 4 } }
+        ]
+      },
+      {
+        text: "压力大时如果必须放弃一种自救，你先划掉？",
+        options: [
+          { text: "把问题拆开、自己找出路。", scores: { nt: 4 } },
+          { text: "找一个懂你的人把话说完。", scores: { nf: 4 } },
+          { text: "把能控的部分按步骤做完。", scores: { sj: 4 } },
+          { text: "不找人说，也不拆题，先把情绪放到谁也进不来的地方。", scores: { nt: 1, nf: 1, sj: 1, sp: 1 } }
+        ]
+      },
+      {
+        text: "别人对你的看法里，如果必须放弃一个，你先划掉？",
+        options: [
+          { text: "别人觉得你太较真、太冷静。", scores: { nt: 4 } },
+          { text: "别人觉得你想太多、太心软。", scores: { nf: 4 } },
+          { text: "别人觉得你太古板、太操心。", scores: { sj: 4 } },
+          { text: "别人觉得你不够稳、太随性。", scores: { sp: 4 } }
+        ]
+      }
+    ]
+  };
+  /* =========================  引擎（通常不必改）  ========================= */
+  const FONT_SERIF = '"Noto Serif CJK SC", "Noto Serif CJK", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif';
+  const FONT_SANS  = '"Noto Sans CJK SC", "Noto Sans CJK", "Source Han Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  const KEYS = ["A", "B", "C", "D", "E", "F"];
+
+  const state = {
+    screen: "home",
+    qIndex: 0,
+    answers: [],
+    result: null,
+    bars: [],
+    cardUrl: ""
+  };
+
+  const app = document.getElementById("app");
+  const toastEl = document.getElementById("toast");
+  let toastTimer = 0;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("is-on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 2400);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function nl2br(s) {
+    return escapeHtml(s).replace(/\n/g, "<br>");
+  }
+
+  function render() {
+    document.title = QUIZ_CONFIG.title;
+    if (state.screen === "home") renderHome();
+    else if (state.screen === "quiz") renderQuiz();
+    else if (state.screen === "generating") renderGenerating();
+    else if (state.screen === "result") renderResult();
+  }
+
+  function renderHome() {
+    const chips = QUIZ_CONFIG.subtitle.split("/").map((t) => t.trim()).filter(Boolean);
+    app.innerHTML = `
+      <section class="view is-on" id="view-home">
+        <div class="home-top">
+          <div class="home-eyebrow-wrap">
+            <div class="eyebrow">${escapeHtml(QUIZ_CONFIG.kicker)}</div>
+          </div>
+          <div class="ornament" aria-hidden="true"></div>
+          <h1 class="home-title">${formatTitle(QUIZ_CONFIG.title)}</h1>
+          <div class="chips">
+            ${chips.map((c, i) => `<span class="chip chip-${escapeHtml((QUIZ_CONFIG.chipThemes || [])[i] || "ink")}">${escapeHtml(c)}</span>`).join("")}
+          </div>
+          ${Array.isArray(QUIZ_CONFIG.strikeChips) && QUIZ_CONFIG.strikeChips.length ? `<div class="strike-board" aria-hidden="true">${QUIZ_CONFIG.strikeChips.map((s) => `<span class="strike-chip${s.dropped ? " is-off" : ""}">${escapeHtml(s.text)}</span>`).join("")}</div>` : ""}
+          <p class="home-lead">${nl2br(QUIZ_CONFIG.lead)}</p>
+        </div>
+        <div>
+          <button type="button" class="cta-primary" id="btn-start">${escapeHtml(QUIZ_CONFIG.startLabel)}</button>
+          <p class="home-meta">${nl2br(QUIZ_CONFIG.homeMeta)}</p>
+        </div>
+        <p class="home-footer">${escapeHtml(QUIZ_CONFIG.homeFoot)}</p>
+      </section>`;
+    document.getElementById("btn-start").addEventListener("click", startQuiz);
+  }
+
+  function formatTitle(title) {
+    const raw = String(title || "");
+    if (raw.includes("MBTI")) {
+      const parts = raw.split("MBTI");
+      const head = escapeHtml(parts[0] || "").replace("，", "，<br>");
+      const mbti = '<span class="mbti"><i class="c-nt">M</i><i class="c-nf">B</i><i class="c-sj">T</i><i class="c-sp">I</i></span>';
+      return head + mbti + escapeHtml(parts[1] || "");
+    }
+    const t = escapeHtml(raw);
+    if (t.includes("，")) {
+      const segs = t.split("，");
+      return segs[0] + "，<br>" + segs.slice(1).join("，");
+    }
+    if (t.length > 8) {
+      const cut = Math.ceil(t.length / 2);
+      return t.slice(0, cut) + "<br>" + t.slice(cut);
+    }
+    return t;
+  }
+
+  function startQuiz() {
+    state.screen = "quiz";
+    state.qIndex = 0;
+    state.answers = [];
+    state.result = null;
+    state.bars = [];
+    state.cardUrl = "";
+    render();
+  }
+
+  function renderQuiz() {
+    const q = QUIZ_CONFIG.questions[state.qIndex];
+    const total = QUIZ_CONFIG.questions.length;
+    const n = state.qIndex + 1;
+    const pct = (state.qIndex / total) * 100;
+    app.innerHTML = `
+      <section class="view is-on" id="view-quiz">
+        <div class="quiz-bar">
+          <button type="button" class="back-btn" id="btn-back" ${state.qIndex === 0 ? "disabled" : ""} aria-label="上一题">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span>QUESTION</span>
+              <span>${String(n).padStart(2, "0")}  /  ${String(total).padStart(2, "0")}</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>
+        <div class="q-kicker">${escapeHtml(QUIZ_CONFIG.quizKicker)}</div>
+        <h2 class="q-title">${escapeHtml(q.text)}</h2>
+        <div class="options" id="options">
+          ${q.options.map((opt, i) => `
+            <button type="button" class="option" data-index="${i}">
+              <span class="opt-key">${KEYS[i]}</span>
+              <span class="opt-text">${escapeHtml(opt.text)}</span>
+            </button>`).join("")}
+        </div>
+      </section>`;
+    requestAnimationFrame(() => {
+      const fill = app.querySelector(".progress-fill");
+      if (fill) fill.style.width = (n / total) * 100 + "%";
+    });
+    document.getElementById("btn-back").addEventListener("click", goBack);
+    app.querySelectorAll(".option").forEach((btn) => {
+      btn.addEventListener("click", () => pickOption(Number(btn.dataset.index), btn));
+    });
+  }
+
+  function goBack() {
+    if (state.qIndex === 0) return;
+    state.answers.pop();
+    state.qIndex -= 1;
+    render();
+  }
+
+  function pickOption(index, btn) {
+    if (app.dataset.locked === "1") return;
+    app.dataset.locked = "1";
+    btn.classList.add("is-picked");
+    state.answers[state.qIndex] = index;
+    const last = state.qIndex >= QUIZ_CONFIG.questions.length - 1;
+    setTimeout(() => {
+      app.dataset.locked = "0";
+      if (last) finishQuiz();
+      else {
+        state.qIndex += 1;
+        render();
+      }
+    }, 420);
+  }
+
+  function emptyScores() {
+    const t = {};
+    QUIZ_CONFIG.results.forEach((r) => { t[r.id] = 0; });
+    return t;
+  }
+
+  function totalsFromAnswers(answers) {
+    const t = emptyScores();
+    answers.forEach((optIndex, qi) => {
+      const opt = QUIZ_CONFIG.questions[qi].options[optIndex];
+      if (!opt) return;
+      Object.entries(opt.scores).forEach(([k, v]) => {
+        t[k] = (t[k] || 0) + v;
+      });
+    });
+    return t;
+  }
+
+  function hitsHidden(answers) {
+    const hidden = QUIZ_CONFIG.hidden;
+    if (!hidden || !hidden.matches || !hidden.matches.length) return false;
+    const need = hidden.minHits == null ? hidden.matches.length : hidden.minHits;
+    let hits = 0;
+    hidden.matches.forEach((m) => {
+      if (answers[m.q] === m.option) hits += 1;
+    });
+    return hits >= need;
+  }
+
+  function pickResult(totals, answers) {
+    if (hitsHidden(answers) && QUIZ_CONFIG.hidden && QUIZ_CONFIG.hidden.result) {
+      return QUIZ_CONFIG.hidden.result;
+    }
+    let best = QUIZ_CONFIG.results[0];
+    let bestScore = -1;
+    for (const r of QUIZ_CONFIG.results) {
+      const v = totals[r.id] || 0;
+      if (v > bestScore) {
+        bestScore = v;
+        best = r;
+      }
+    }
+    return best;
+  }
+
+  function toPercents(values) {
+    const sum = values.reduce((a, b) => a + b, 0);
+    if (sum <= 0) {
+      const even = Math.floor(100 / values.length);
+      const arr = values.map(() => even);
+      arr[0] += 100 - even * values.length;
+      return arr;
+    }
+    const raw = values.map((v) => (v / sum) * 100);
+    const floored = raw.map(Math.floor);
+    let remain = 100 - floored.reduce((a, b) => a + b, 0);
+    const order = raw
+      .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+      .sort((a, b) => b.frac - a.frac);
+    for (let k = 0; k < remain; k++) floored[order[k % order.length].i] += 1;
+    return floored;
+  }
+
+  function computeBreakdown(totals) {
+    const items = QUIZ_CONFIG.breakdown.items;
+    const raw = items.map((item) => {
+      let v = 0;
+      (item.from || []).forEach((k) => { v += totals[k] || 0; });
+      (item.share || []).forEach((k) => { v += (totals[k] || 0) * 0.5; });
+      return v;
+    });
+    const pcts = toPercents(raw);
+    return items.map((item, i) => ({
+      key: item.key,
+      label: item.label,
+      raw: raw[i],
+      pct: pcts[i],
+      color: item.color
+    }));
+  }
+
+  function finishQuiz() {
+    const totals = totalsFromAnswers(state.answers);
+    state.result = pickResult(totals, state.answers);
+    state.bars = computeBreakdown(totals);
+    state.screen = "generating";
+    render();
+    Promise.resolve()
+      .then(() => ensureFonts())
+      .then(() => new Promise((r) => setTimeout(r, 640)))
+      .then(() => drawResultCard(state.result, state.bars))
+      .then((url) => {
+        state.cardUrl = url;
+        state.screen = "result";
+        render();
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast("结果卡生成失败，请重试");
+        state.screen = "home";
+        render();
+      });
+  }
+
+  function renderGenerating() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-generating">
+        <div class="gen-wrap">
+          <div class="gen-mark" aria-hidden="true"></div>
+          <p class="gen-text">正在生成你的结果卡</p>
+          <p class="gen-sub">稍等片刻</p>
+        </div>
+      </section>`;
+  }
+
+  function renderResult() {
+    app.innerHTML = `
+      <section class="view is-on" id="view-result">
+        <div class="result-head">
+          <div class="eyebrow">你的类型已生成</div>
+          <p class="result-hint">长按结果卡，即可保存到相册</p>
+        </div>
+        <img id="result-card-img" alt="${escapeHtml(state.result.name)} 结果卡" src="${state.cardUrl}" />
+        <div class="result-actions">
+          <button type="button" class="cta-save" id="btn-save">保存结果卡</button>
+          <button type="button" class="cta-ghost" id="btn-retry">重新测试</button>
+        </div>
+        <p class="result-note">也可以直接长按上图保存  ·  去评论区报出你的类型</p>
+      </section>`;
+    document.getElementById("btn-save").addEventListener("click", saveOrShareCard);
+    document.getElementById("btn-retry").addEventListener("click", startQuiz);
+  }
+
+  async function saveOrShareCard() {
+    const img = document.getElementById("result-card-img");
+    if (!img || !img.src) return;
+    const filename = `${QUIZ_CONFIG.card.filePrefix}-${state.result.name}.png`;
+    try {
+      const blob = await (await fetch(img.src)).blob();
+      const file = new File([blob], filename, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: state.result.name, text: state.result.quote });
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = img.src;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      showToast("长按上方结果卡，即可保存到相册");
+    }
+  }
+
+  async function ensureFonts() {
+    if (!document.fonts) return;
+    try { await document.fonts.ready; } catch (e) {}
+    const faces = [
+      `700 112px ${FONT_SERIF}`,
+      `400 42px ${FONT_SERIF}`,
+      `700 42px ${FONT_SERIF}`,
+      `400 28px ${FONT_SANS}`,
+      `500 28px ${FONT_SANS}`,
+      `700 30px ${FONT_SANS}`
+    ];
+    await Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null)));
+  }
+
+  function wrapText(ctx, text, maxWidth) {
+    const noStart = "。，、；：！？）》」』…";
+    const preferred = "。！？；，、 ";
+    const out = [];
+
+    function fixOrphans(block) {
+      if (block.length < 2) return block;
+      const minLast = 5;
+      const last = [...block[block.length - 1]];
+      if (last.length >= minLast) return block;
+      const prev = [...block[block.length - 2]];
+      while (last.length < minLast && prev.length > minLast + 1) {
+        last.unshift(prev.pop());
+      }
+      block[block.length - 2] = prev.join("");
+      block[block.length - 1] = last.join("");
+      return block;
+    }
+
+    for (const paragraph of String(text || "").split("\n")) {
+      const chars = [...paragraph];
+      if (!chars.length) { out.push(""); continue; }
+      const para = [];
+      let line = "";
+      let breakAt = -1;
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        const test = line + ch;
+        const overflow = !!(line && ctx.measureText(test).width > maxWidth && !noStart.includes(ch));
+        if (overflow) {
+          const arr = [...line];
+          if (breakAt >= 4 && breakAt < arr.length) {
+            para.push(arr.slice(0, breakAt).join(""));
+            line = arr.slice(breakAt).join("");
+            breakAt = -1;
+            i -= 1;
+            continue;
+          }
+          para.push(line);
+          line = "";
+          breakAt = -1;
+          i -= 1;
+          continue;
+        }
+        line = test;
+        if (preferred.includes(ch)) breakAt = [...line].length;
+      }
+      if (line) para.push(line);
+      out.push.apply(out, fixOrphans(para));
+    }
+    return out;
+  }
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function getCardPalette(result) {
+    const theme = (result && result.theme) || {};
+    const dark = theme.id === "black-gold" || theme.mode === "dark";
+    if (dark) {
+      const gold = theme.gold || "#E5C168";
+      const ivory = theme.ivory || "#F4F1EA";
+      const bg = theme.bg || "#121318";
+      return {
+        bg: bg,
+        wash: "rgba(229,193,104,0.14)",
+        ink: ivory,
+        accent: gold,
+        track: "rgba(229,193,104,0.18)",
+        faint: "rgba(244,241,234,0.48)",
+        hook: "rgba(244,241,234,0.78)",
+        summary: "rgba(244,241,234,0.70)",
+        frame: "rgba(229,193,104,0.70)",
+        frameInner: "rgba(229,193,104,0.30)",
+        divider: "rgba(229,193,104,0.28)",
+        tagStroke: "rgba(229,193,104,0.70)",
+        badgeBg: gold,
+        badgeText: bg,
+        grainA: "#000000",
+        grainB: "#E5C168",
+        grainAlpha: 0.06,
+        holo: true
+      };
+    }
+    const accent = theme.accent || "#7C4DFF";
+    const badgeText = theme.badgeText || "#FFFFFF";
+    const wash = theme.wash || "rgba(124,77,255,0.12)";
+    return {
+      bg: "#F7F8FA",
+      wash: wash,
+      ink: "#14151A",
+      accent: accent,
+      track: "rgba(20,21,26,0.08)",
+      faint: "rgba(20,21,26,0.48)",
+      hook: "rgba(20,21,26,0.72)",
+      summary: "rgba(20,21,26,0.62)",
+      frame: accent,
+      frameInner: "rgba(20,21,26,0.16)",
+      divider: "rgba(20,21,26,0.14)",
+      tagStroke: "rgba(20,21,26,0.22)",
+      badgeBg: accent,
+      badgeText: badgeText,
+      grainA: "#14151A",
+      grainB: "#FFFFFF",
+      grainAlpha: 0.04,
+      holo: false
+    };
+  }
+
+  function drawResultCard(result, bars) {
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const MX = 128;
+    const contentW = W - MX * 2;
+    const pal = getCardPalette(result);
+    const ink = pal.ink;
+    const rose = pal.accent;
+    const sand = pal.track;
+    const cream = pal.bg;
+    const faint = pal.faint;
+
+    // background
+    ctx.fillStyle = cream;
+    ctx.fillRect(0, 0, W, H);
+    const wash = ctx.createLinearGradient(0, 0, 0, 640);
+    wash.addColorStop(0, pal.wash);
+    wash.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, W, 640);
+
+    if (pal.holo) {
+      const corners = [
+        { c: "rgba(124,77,255,0.20)", x: 0, y: 0 },
+        { c: "rgba(16,185,129,0.14)", x: W, y: 0 },
+        { c: "rgba(37,99,235,0.14)", x: 0, y: H },
+        { c: "rgba(245,158,11,0.16)", x: W, y: H }
+      ];
+      corners.forEach((spot) => {
+        const g = ctx.createRadialGradient(spot.x, spot.y, 80, spot.x, spot.y, 480);
+        g.addColorStop(0, spot.c);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      });
+      const sheen = ctx.createLinearGradient(0, 160, W, 760);
+      sheen.addColorStop(0, "rgba(229,193,104,0)");
+      sheen.addColorStop(0.45, "rgba(229,193,104,0.10)");
+      sheen.addColorStop(0.55, "rgba(124,77,255,0.08)");
+      sheen.addColorStop(1, "rgba(229,193,104,0)");
+      ctx.fillStyle = sheen;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // subtle grain under the type (keeps glyphs crisp)
+    ctx.save();
+    ctx.globalAlpha = pal.grainAlpha;
+    const grains = pal.holo ? 5000 : 9000;
+    for (let i = 0; i < grains; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? pal.grainA : pal.grainB;
+      ctx.fillRect(Math.random() * W, Math.random() * H, 1.2, 1.2);
+    }
+    ctx.restore();
+
+    // temperament watermark, scannable in comment screenshots
+    if (result.mark) {
+      ctx.save();
+      ctx.globalAlpha = pal.holo ? 0.13 : 0.10;
+      ctx.fillStyle = rose;
+      ctx.font = `700 260px ${FONT_SANS}`;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillText(result.mark, W - 72, 210);
+      ctx.restore();
+    }
+
+    // double frame + bold accent outer rule (neo-brutalist / camp color)
+    ctx.strokeStyle = pal.frame;
+    ctx.lineWidth = pal.holo ? 3 : 6;
+    ctx.strokeRect(48, 48, W - 96, H - 96);
+    ctx.strokeStyle = pal.frameInner;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(64, 64, W - 128, H - 128);
+
+    // stamp
+    const stamp = result.stamp || QUIZ_CONFIG.card.stamp || "招";
+    const sx = W - 168;
+    const sy = 168;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 52, 0, Math.PI * 2);
+    ctx.strokeStyle = rose;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(sx, sy, 44, 0, Math.PI * 2);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = rose;
+    ctx.font = `700 40px ${FONT_SERIF}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(stamp, sx, sy + 2);
+
+    let y = 150;
+
+    // eyebrow
+    ctx.fillStyle = faint;
+    ctx.font = `400 22px ${FONT_SANS}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.letterSpacing = "8px";
+    try { ctx.letterSpacing = "0.22em"; } catch (e) {}
+    ctx.fillText(result.eyebrow || QUIZ_CONFIG.card.eyebrow, MX, y);
+    ctx.letterSpacing = "0px";
+
+    // badge
+    y = 210;
+    const badge = result.badge || QUIZ_CONFIG.card.badge;
+    ctx.font = `500 22px ${FONT_SANS}`;
+    const badgeW = ctx.measureText(badge).width + 48;
+    const badgeH = 44;
+    const badgeX = MX;
+    roundedRect(ctx, badgeX, y, badgeW, badgeH, 22);
+    ctx.fillStyle = pal.badgeBg;
+    ctx.fill();
+    ctx.fillStyle = pal.badgeText;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badge, badgeX + 24, y + badgeH / 2 + 1);
+
+    // title
+    y = 430;
+    ctx.fillStyle = ink;
+    ctx.font = `700 108px ${FONT_SERIF}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    const titleLines = wrapText(ctx, result.name, contentW);
+    const titleSize = titleLines.length > 1 ? 84 : 108;
+    ctx.font = `700 ${titleSize}px ${FONT_SERIF}`;
+    const titleLines2 = wrapText(ctx, result.name, contentW);
+    const titleLh = titleSize + 16;
+    titleLines2.forEach((line, i) => {
+      ctx.fillText(line, MX, y + i * titleLh);
+    });
+    y += titleLines2.length * titleLh + 28;
+
+    // hook
+    ctx.fillStyle = pal.hook;
+    ctx.font = `400 30px ${FONT_SANS}`;
+    const hookLines = wrapText(ctx, result.hook, contentW);
+    hookLines.forEach((line) => {
+      ctx.fillText(line, MX, y);
+      y += 48;
+    });
+    y += 28;
+
+    // tags
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.textBaseline = "middle";
+    let tagX = MX;
+    const tagY = y;
+    const tagH = 52;
+    (result.tags || []).slice(0, 3).forEach((tag) => {
+      const tw = ctx.measureText(tag).width + 40;
+      roundedRect(ctx, tagX, tagY, tw, tagH, 26);
+      ctx.strokeStyle = pal.tagStroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = ink;
+      ctx.textAlign = "center";
+      ctx.fillText(tag, tagX + tw / 2, tagY + tagH / 2 + 1);
+      tagX += tw + 16;
+      ctx.textAlign = "left";
+    });
+    y = tagY + tagH + 70;
+
+    // quote
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("「", MX - 8, y);
+    y += 18;
+    ctx.fillStyle = ink;
+    ctx.font = `400 40px ${FONT_SERIF}`;
+    const quote = String(result.quote || "").replace(/^[「『]/, "").replace(/[」』]$/, "");
+    const quoteLines = wrapText(ctx, quote, contentW - 20);
+    quoteLines.forEach((line) => {
+      ctx.fillText(line, MX + 8, y);
+      y += 66;
+    });
+    ctx.fillStyle = rose;
+    ctx.font = `700 72px ${FONT_SERIF}`;
+    ctx.textAlign = "right";
+    ctx.fillText("」", W - MX + 8, y + 8);
+    ctx.textAlign = "left";
+    y += 56;
+
+    // divider
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, y);
+    ctx.lineTo(W - MX, y);
+    ctx.stroke();
+    y += 70;
+
+    // breakdown title
+    ctx.fillStyle = faint;
+    ctx.font = `500 24px ${FONT_SANS}`;
+    ctx.fillText(QUIZ_CONFIG.card.breakdownTitle, MX, y);
+    y += 54;
+
+    // bars — reserve footer space so nothing collides
+    const footerTop = 1728;
+    const barCount = Math.max(bars.length, 1);
+    const barBlock = Math.min(140, Math.max(110, (footerTop - 40 - y) / barCount));
+    bars.forEach((bar) => {
+      ctx.fillStyle = ink;
+      ctx.font = `500 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(bar.label, MX, y);
+      ctx.textAlign = "right";
+      ctx.fillText(bar.pct + "%", W - MX, y);
+      ctx.textAlign = "left";
+
+      const trackY = y + 24;
+      const trackH = 16;
+      roundedRect(ctx, MX, trackY, contentW, trackH, 8);
+      ctx.fillStyle = sand;
+      ctx.fill();
+      const fillW = Math.max(bar.pct > 0 ? 16 : 0, Math.round(contentW * (bar.pct / 100)));
+      if (fillW > 0) {
+        roundedRect(ctx, MX, trackY, fillW, trackH, 8);
+        ctx.fillStyle = bar.color || rose;
+        ctx.fill();
+      }
+      y += barBlock;
+    });
+
+    // summary, if it still fits above the pinned footer
+    const fy = 1764;
+    if (result.summary) {
+      ctx.fillStyle = pal.summary;
+      ctx.font = `400 28px ${FONT_SANS}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      const sumLines = wrapText(ctx, result.summary, contentW);
+      const sumLh = 48;
+      const sumBlock = sumLines.length * sumLh;
+      let sy = y + 12;
+      if (sy + sumBlock > fy - 36) {
+        sy = Math.max(y, fy - 36 - sumBlock);
+      }
+      if (sy + sumBlock <= fy - 24) {
+        sumLines.forEach((line, i) => {
+          ctx.fillText(line, MX, sy + i * sumLh);
+        });
+      }
+    }
+
+    // footer pinned
+    ctx.strokeStyle = pal.divider;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(MX, fy);
+    ctx.lineTo(W - MX, fy);
+    ctx.stroke();
+
+    ctx.fillStyle = ink;
+    ctx.font = `400 24px ${FONT_SANS}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(result.footer || QUIZ_CONFIG.card.footer, W / 2, fy + 50);
+    ctx.fillStyle = faint;
+    ctx.font = `400 20px ${FONT_SANS}`;
+    ctx.fillText(result.disclaimer || QUIZ_CONFIG.card.disclaimer, W / 2, fy + 90);
+
+    const url = canvas.toDataURL("image/png");
+    return url;
+  }
+
+  render();
+  </script>
+</body>
+</html>

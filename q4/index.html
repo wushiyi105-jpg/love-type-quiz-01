@@ -698,6 +698,19 @@
       background: var(--navy, #1E293B);
     }
     .code-gate-submit:active { background: #0F172A; }
+    
+    .code-gate-auto-badge {
+      margin: 0 0 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--rose-soft, var(--blue-soft, rgba(0, 0, 0, 0.06)));
+      color: var(--ink);
+      font-family: var(--font-sans, sans-serif);
+      font-size: 12px;
+      line-height: 1.55;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
     </style>
 </head>
 <body>
@@ -1310,6 +1323,27 @@
     } catch (err) {}
   }
 
+  let codeGateAutoUnlocked = false;
+
+  function tryAutoUnlockFromUrl() {
+    let raw = "";
+    try {
+      raw = new URLSearchParams(window.location.search).get("code") || "";
+    } catch (err) {
+      return false;
+    }
+    if (!String(raw).trim()) return false;
+    const code = normalizeRedeemCode(raw);
+    if (!isValidRedeemCode(code)) return false;
+    persistUnlock(code);
+    codeGateAutoUnlocked = true;
+    try {
+      history.replaceState({}, "", window.location.pathname + window.location.hash);
+    } catch (err) {}
+    return true;
+  }
+
+
   function requestStartQuiz() {
     if (isQuizUnlocked()) {
       startQuiz();
@@ -1396,6 +1430,7 @@
 
   bindSaveLightbox();
   bindCodeGate();
+  tryAutoUnlockFromUrl();
   async function ensureFonts() {
     if (!document.fonts) return;
     try { await document.fonts.ready; } catch (e) {}
@@ -1498,6 +1533,7 @@
             ${chips.map((c) => `<span class="chip">${escapeHtml(c)}</span>`).join("")}
           </div>
           <p class="home-lead">${nl2br(QUIZ_CONFIG.lead)}</p>
+          ${codeGateAutoUnlocked ? '<p class="code-gate-auto-badge" id="code-gate-auto-badge" role="status">✓ 兑换码已自动验证，点下方按钮直接开测</p>' : ""}
           <button type="button" class="cta-primary" id="btn-start">${escapeHtml(QUIZ_CONFIG.startLabel)}</button>
           <p class="home-meta">${nl2br(QUIZ_CONFIG.homeMeta)}</p>
           <div class="barcode" aria-hidden="true"></div>

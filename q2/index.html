@@ -502,7 +502,133 @@
     @media (prefers-reduced-motion: reduce) {
       .view, .gen-mark, .progress-fill, .cta-primary, .option { animation: none; transition: none; }
     }
-  </style>
+  
+    /* —— 兑换码解锁弹窗（不影响封面预览，仅在点击开始后出现） —— */
+    .code-gate-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px calc(24px + var(--safe-bottom, 0px));
+      box-sizing: border-box;
+    }
+    .code-gate-modal.is-on { display: flex; }
+    .code-gate-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 18, 16, 0.46);
+    }
+    .code-gate-panel {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 340px);
+      background: var(--card, var(--paper, #fff));
+      color: var(--ink);
+      border-radius: 20px;
+      padding: 28px 22px 22px;
+      box-shadow: var(--shadow, 0 18px 40px rgba(0,0,0,0.16));
+      box-sizing: border-box;
+    }
+    .code-gate-close {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      background: transparent;
+      color: var(--ink-faint, #888);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    .code-gate-close:active { color: var(--ink); }
+    .code-gate-title {
+      margin: 0 28px 10px 0;
+      font-family: var(--font-serif, serif);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+    .code-gate-sub {
+      margin: 0 0 18px;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--ink-soft, #555);
+    }
+    .code-gate-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
+    #code-gate-input {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      height: 52px;
+      padding: 0 14px;
+      border: 1.5px solid var(--line, rgba(0,0,0,0.16));
+      border-radius: 12px;
+      background: var(--cream, var(--paper, #fff));
+      color: var(--ink);
+      font-family: "SF Mono", "Menlo", "Consolas", "Courier New", var(--font-sans, sans-serif);
+      font-size: 20px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      text-align: center;
+      outline: none;
+    }
+    #code-gate-input:focus {
+      border-color: var(--rose, var(--blue, var(--ink)));
+      box-shadow: 0 0 0 3px var(--rose-soft, var(--blue-soft, rgba(0,0,0,0.08)));
+    }
+    .code-gate-error {
+      margin: 10px 0 0;
+      min-height: 0;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--rose-deep, var(--rose, #B04842));
+    }
+    .code-gate-error[hidden] { display: none; }
+    .code-gate-submit {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      height: 48px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+    .code-gate-submit:active { transform: scale(0.98); }
+
+    .code-gate-panel {
+      border-radius: 10px;
+      border: 1px solid rgba(166, 44, 43, 0.28);
+      background: var(--card);
+    }
+    .code-gate-title { letter-spacing: 0.08em; }
+    .code-gate-submit {
+      background: var(--rose);
+      border-radius: 4px;
+    }
+    .code-gate-submit:active { background: var(--rose-deep); }
+    #code-gate-input { border-radius: 4px; background: var(--cream); }
+    </style>
 </head>
 <body>
   <div id="app"></div>
@@ -514,6 +640,21 @@
       <div class="save-lightbox-hint">👆 长按下方图片 → 保存到相册</div>
       <img id="save-lightbox-img" alt="结果卡" />
       <button type="button" class="save-lightbox-close" data-lightbox-close>关闭</button>
+    </div>
+  </div>
+
+  <div id="code-gate-modal" class="code-gate-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="code-gate-title">
+    <div class="code-gate-backdrop" data-code-gate-close></div>
+    <div class="code-gate-panel">
+      <button type="button" class="code-gate-close" data-code-gate-close aria-label="关闭">×</button>
+      <h2 id="code-gate-title" class="code-gate-title">输入 8 位兑换码开启测试</h2>
+      <p class="code-gate-sub">在微店订单「查看券码」或短信中复制 8 位码填入即可（本机解锁后可重复测）</p>
+      <form id="code-gate-form" autocomplete="off">
+        <label class="code-gate-label" for="code-gate-input">8 位兑换码</label>
+        <input id="code-gate-input" name="redeem" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="例如 GD7K4M9P" />
+        <p id="code-gate-error" class="code-gate-error" role="alert" hidden></p>
+        <button type="submit" class="code-gate-submit">验证并开始测试</button>
+      </form>
     </div>
   </div>
 
@@ -816,7 +957,7 @@
         </div>
         <p class="home-footer">${escapeHtml(QUIZ_CONFIG.homeFoot)}</p>
       </section>`;
-    document.getElementById("btn-start").addEventListener("click", startQuiz);
+    document.getElementById("btn-start").addEventListener("click", requestStartQuiz);
   }
 
   function formatTitle(title) {
@@ -1105,7 +1246,148 @@
       if (e.key === "Escape" && box.classList.contains("is-on")) closeSaveLightbox();
     });
   }
+
+  const CODE_GATE = {
+    prefix: "GD",
+    salt: "sealcinnabar-gd-m3w8nt",
+    storageKey: "quiz_unlocked_GD"
+  };
+  const REDEEM_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+  function redeemFnv1a(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h >>> 0;
+  }
+
+  function redeemChecksum(prefix, payload) {
+    const h = redeemFnv1a(CODE_GATE.salt + prefix + payload);
+    return REDEEM_ALPHABET[h & 31] + REDEEM_ALPHABET[(h >>> 5) & 31];
+  }
+
+  function normalizeRedeemCode(raw) {
+    return String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  }
+
+  function isValidRedeemCode(raw) {
+    const code = normalizeRedeemCode(raw);
+    if (code.length !== 8) return false;
+    if (code.slice(0, 2) !== CODE_GATE.prefix) return false;
+    for (let i = 0; i < 8; i++) {
+      if (REDEEM_ALPHABET.indexOf(code[i]) < 0) return false;
+    }
+    return redeemChecksum(CODE_GATE.prefix, code.slice(2, 6)) === code.slice(6, 8);
+  }
+
+  function isQuizUnlocked() {
+    try {
+      const raw = localStorage.getItem(CODE_GATE.storageKey);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      return !!(data && data.code && isValidRedeemCode(data.code));
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function persistUnlock(code) {
+    try {
+      localStorage.setItem(CODE_GATE.storageKey, JSON.stringify({
+        code: normalizeRedeemCode(code),
+        ts: Date.now()
+      }));
+    } catch (err) {}
+  }
+
+  function requestStartQuiz() {
+    if (isQuizUnlocked()) {
+      startQuiz();
+      return;
+    }
+    openCodeGate();
+  }
+
+  function openCodeGate() {
+    const modal = document.getElementById("code-gate-modal");
+    const input = document.getElementById("code-gate-input");
+    const error = document.getElementById("code-gate-error");
+    if (!modal) return;
+    if (error) {
+      error.hidden = true;
+      error.textContent = "";
+    }
+    if (input) input.value = "";
+    modal.classList.add("is-on");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => { if (input) input.focus(); }, 40);
+  }
+
+  function closeCodeGate() {
+    const modal = document.getElementById("code-gate-modal");
+    if (!modal) return;
+    modal.classList.remove("is-on");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function submitCodeGate(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById("code-gate-input");
+    const error = document.getElementById("code-gate-error");
+    const raw = input ? input.value : "";
+    const code = normalizeRedeemCode(raw);
+    if (input) input.value = code;
+    if (!isValidRedeemCode(code)) {
+      if (error) {
+        error.hidden = false;
+        error.textContent = "兑换码无效或与当前测试不匹配，请核对微店订单中的 8 位券码";
+      }
+      if (input) {
+        input.focus();
+        input.select();
+      }
+      return;
+    }
+    persistUnlock(code);
+    closeCodeGate();
+    startQuiz();
+  }
+
+  function bindCodeGate() {
+    const modal = document.getElementById("code-gate-modal");
+    if (!modal || modal.dataset.bound === "1") return;
+    modal.dataset.bound = "1";
+    const form = document.getElementById("code-gate-form");
+    const input = document.getElementById("code-gate-input");
+    if (form) form.addEventListener("submit", submitCodeGate);
+    if (input) {
+      input.addEventListener("input", () => {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const next = input.value.toUpperCase();
+        if (input.value !== next) {
+          input.value = next;
+          try { input.setSelectionRange(start, end); } catch (err) {}
+        }
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submitCodeGate(e);
+      });
+    }
+    modal.addEventListener("click", (e) => {
+      if (e.target && e.target.hasAttribute("data-code-gate-close")) closeCodeGate();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-on")) closeCodeGate();
+    });
+  }
+
   bindSaveLightbox();
+  bindCodeGate();
   async function ensureFonts() {
     if (!document.fonts) return;
     try { await document.fonts.ready; } catch (e) {}
